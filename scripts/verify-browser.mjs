@@ -90,11 +90,55 @@ async function check(name, width, height, theme) {
   })
   ok(painted, 'map canvas has dimensions')
 
-  const dots = await page.evaluate(() => {
-    const el = document.getElementById('layers')
-    return el ? el.querySelectorAll('.chip').length : 0
-  })
+  const dots = await page.evaluate(() =>
+    document.querySelectorAll('#layer-chips .chip').length)
   ok(dots > 5, `layer chips rendered (${dots})`)
+
+  // On a phone the legend lives in a sheet behind a toggle; on desktop it is
+  // always laid out in the dock. Either way every chip must be reachable and
+  // fully on screen — never clipped by a horizontal scroll.
+  const sheetMode = await page.evaluate(() =>
+    getComputedStyle(document.getElementById('layers-btn')).display !== 'none')
+
+  if (sheetMode) {
+    await page.click('#layers-btn')
+    // Wait for the slide-up to settle, not just for the class — measuring
+    // mid-transition reports every chip as off-screen.
+    await page.waitForFunction(() => {
+      const el = document.getElementById('layers')
+      if (!el.classList.contains('open')) return false
+      return el.getBoundingClientRect().bottom <= document.documentElement.clientHeight + 1
+    }, { timeout: 3000 })
+  }
+
+  const legend = await page.evaluate(() => {
+    const box = document.getElementById('layer-chips')
+    const chips = [...box.querySelectorAll('.chip')]
+    const vw = document.documentElement.clientWidth
+    const vh = document.documentElement.clientHeight
+    return {
+      hScroll: box.scrollWidth > box.clientWidth + 1,
+      offscreen: chips.filter((c) => {
+        const r = c.getBoundingClientRect()
+        return r.right > vw + 1 || r.left < -1
+      }).length,
+      belowFold: chips.filter((c) => c.getBoundingClientRect().top > vh).length,
+      cols: new Set(chips.map((c) => Math.round(c.getBoundingClientRect().left))).size,
+      minTap: Math.round(Math.min(...chips.map((c) => c.getBoundingClientRect().height))),
+    }
+  })
+  ok(!legend.hScroll, `legend does not scroll sideways${sheetMode ? ' (sheet)' : ' (dock)'}`)
+  ok(legend.offscreen === 0, `all ${dots} chips within the viewport (${legend.cols} columns)`,
+     legend.offscreen ? `${legend.offscreen} cut off` : '')
+  if (sheetMode) {
+    ok(legend.minTap >= 34, `chips are tappable (${legend.minTap}px tall)`)
+    ok(legend.belowFold === 0, 'no chip starts below the fold',
+       legend.belowFold ? `${legend.belowFold} need scrolling` : '')
+    await page.click('.layers-close')
+    await page.waitForFunction(() =>
+      !document.getElementById('layers').classList.contains('open'), { timeout: 2000 })
+    ok(true, 'sheet closes')
+  }
 
   ok(await page.$('#foot a') !== null, 'source link present in footer')
 
@@ -107,14 +151,18 @@ async function check(name, width, height, theme) {
   ok(labels > 0, `map labels rendering (${labels} visible)`,
      labels === 0 ? 'glyphs failed or minzoom too high' : '')
 
-  // The dock must not overlap itself — chips and footer in one stack.
-  const overlap = await page.evaluate(() => {
-    const l = document.getElementById('layers')?.getBoundingClientRect()
-    const f = document.getElementById('foot')?.getBoundingClientRect()
-    if (!l || !f) return 'missing'
-    return l.bottom > f.top + 1 ? `layers.bottom=${l.bottom.toFixed(0)} > foot.top=${f.top.toFixed(0)}` : ''
-  })
-  ok(overlap === '', 'layer chips do not overlap the footer', overlap)
+  // In dock mode the chips and the footer share one stack and must not
+  // collide. In sheet mode the legend is an overlay that covers them on
+  // purpose, so the check does not apply.
+  if (!sheetMode) {
+    const overlap = await page.evaluate(() => {
+      const l = document.getElementById('layers')?.getBoundingClientRect()
+      const f = document.getElementById('foot')?.getBoundingClientRect()
+      if (!l || !f) return 'missing'
+      return l.bottom > f.top + 1 ? `layers.bottom=${l.bottom.toFixed(0)} > foot.top=${f.top.toFixed(0)}` : ''
+    })
+    ok(overlap === '', 'layer chips do not overlap the footer', overlap)
+  }
 
   // Open the palette and run a query the way a user would.
   await page.keyboard.down('Meta'); await page.keyboard.press('KeyK'); await page.keyboard.up('Meta')
@@ -165,7 +213,7 @@ async function check(name, width, height, theme) {
 
 await check('desktop-dark', 1440, 900, 'dark')
 await check('desktop-light', 1440, 900, 'light')
-await check('mobile-dark', 390, 844, 'dark')
+await check('mobile-dark', 402, 874, 'dark')
 
 await browser.close()
 await rm(PROFILE, { recursive: true, force: true })
