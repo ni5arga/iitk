@@ -90,6 +90,21 @@ async function check(name, width, height, theme) {
   })
   ok(painted, 'map canvas has dimensions')
 
+  // Prove the stylesheet actually applied, rather than merely downloading. A
+  // CSS file refused for its MIME type still shows up as a 200 in the network
+  // log; only the computed style tells you the truth.
+  const css = await page.evaluate(() => {
+    const sheets = [...document.styleSheets].filter((s) => {
+      try { return s.cssRules.length > 0 } catch { return false }
+    }).length
+    const bg = getComputedStyle(document.body).backgroundColor
+    const tok = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+    return { sheets, bg, tok }
+  })
+  ok(css.sheets > 0 && css.tok !== '', 'stylesheet applied',
+     css.tok === '' ? 'design tokens missing — CSS downloaded but not applied' : `--bg ${css.tok}`)
+  ok(css.bg !== 'rgba(0, 0, 0, 0)', 'body has a painted background', css.bg)
+
   const dots = await page.evaluate(() =>
     document.querySelectorAll('#layer-chips .chip').length)
   ok(dots > 5, `layer chips rendered (${dots})`)
