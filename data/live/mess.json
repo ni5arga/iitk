@@ -1,0 +1,1554 @@
+{
+ "_source": "https://campusmess.in/api",
+ "_fetched": "2026-08-11T21:36:56.870Z",
+ "_note": "Community-maintained mess menus from campusmess.in. Approved rows only.",
+ "halls": [
+  {
+   "name": "GH 1",
+   "type": "Girls",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 3",
+   "type": "Boys",
+   "tags": []
+  },
+  {
+   "name": "Hall 14",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 13",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 12",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-veg"
+   ]
+  },
+  {
+   "name": "Hall 11",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 10",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 9",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 8",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 7",
+   "type": "Boys",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 6",
+   "type": "Co-ed",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 5",
+   "type": "Co-ed",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 4",
+   "type": "Girls",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  },
+  {
+   "name": "Hall 2",
+   "type": "Co-ed",
+   "tags": [
+    "Veg",
+    "Non-Veg"
+   ]
+  }
+ ],
+ "items": [
+  {
+   "hall": "Hall 7",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Arhar Dal, Karela, Veg-Biryani With Pudeena Chutney, Fruits / Curd, Dahi Vada",
+   "extras": "Fish-Tikka (Non-Veg), Guzhiya",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Bombay Sandwich/Chilla (Moong Dal, Besan), Green Chutney, Boiled Moong, Peanut And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Aloo-Parval, Moong Dal, Rasna, Fruit",
+   "extras": "Litti Chokha, Lemon Garlic Fish Curry (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Aloo Soyabean, Imli Rice, Friench Fries, Arhar Dal",
+   "extras": "Chicken Biryani (Non-Veg), Methi Malai Paneer, Litti Choka Kalakand",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Arbi Sabji, Tehri, Urad Dal",
+   "extras": "Paneer Biryani, Chicken Biryani (Non-Veg), Salan",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Macroni / Sawai Upma, Veg Paneer Cutlet - 2 Pcs",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "(Veg And Mayo Sandwich / Besan And Moong Dal Chila), Tomato Ketchup, Green Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Vada Pav (W1, W3) / Sandwich (W2, W4) (Alternate), Sevai Upma (Optional), Tomato-Sauce",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Lauki Jeera, Aloo Bharta, Rajma, Curd / Fruits, Butter Milk",
+   "extras": "Egg Biryani, Aloo Posto, Ras Malai",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Masala Idli, Idli, Vada (Max 2), Sambar, Nariyal Chutney, Tomato Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Aloo Chokha, Baingan Bharta, Rajma",
+   "extras": "Paneer Tikka, Peda",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Sandwich (Vegetable / Aloo) / Puri Chana + Sooji Halwa",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Aloo Pyaz Paratha, Lehsun Tamarind Chatni, Sauce, Dahi",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "(Idli-Vada / Sewai Upma), Sambhar, Nariyal Chutney, Moongfali Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Mysore Dosa/Masala Dosa, Sambhar, Coconut Chatni, Tomato Chatni",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Malai Kofta, Arhar Daal, Curd/Fruit, Curd Rice, Aam Panna",
+   "extras": "Rajma Chaat, Malai Chicken Tikka (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Chholey-Bhature, Masala Aloo, Laccha Pyaaz, Fried Chillies, Curd / Rose Lassi",
+   "extras": "Chicken Masala (Non-Veg), Paneer-65",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "(Paneer + Aloo Paratha + Dal Paratha) + Aam Chutney + Chana Dal + Aloo Matar Sabzi + Lassi",
+   "extras": "Fish (Non-Veg) / Mutton (Non-Veg) / Chicken (Non-Veg), Paneer Do Pyaja, Gulab Jamun",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "[Aloo Bhujiya + Plain Paratha)]",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Aloo Parwal Dry + Veg Khichdi, Razma + Papad + Boondi Raita + Aam Pana",
+   "extras": "Mustard Rohu Curry (Non-Veg), Began Bhaja, Pyaj Kachori + Red Chatney, Boondi Laddu",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Urad-Dal Chhilka, Kaddu-Jeera Plain, Aloo Matar Tamatar, Galka-Chatney, Poori (Aata / Palak / Maida Puri), Lemon Rice, Rice-Kheer / Seviyan (Alternate Week)",
+   "extras": "Aloo Tikki / Veg Noodles (Alternate)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Aloo Lubiya, Jeera Rice, Chana Dal Tadka",
+   "extras": "Chicken Lollipop (Non-Veg), Coconut Dry Gulab Jamun, Paneer Dosa",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Chhola, Paratha (Pyaz Paneer Mix, Aloo Pyaz, Mix Veg, Lahsun Tamarind Chatni), Boondi Raita, Neebu Pani/Rasna/Roohafza",
+   "extras": "Kalakand/Milk Cake, Fish Curry (Non-Veg), Paneer Kathi Roll, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Malai Paneer / (Chicken - 2Pc (Non-Veg) / Egg Curry), Paratha, Red Masoor Daal, Rabdi Jalebi / Phirni",
+   "extras": "Samosa Chaat",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Besan & Moong Dal Chilla, Peanut Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Masala Idli, Idli, Vada, Sambhar, Coconut Chutney, Tomato Chutney / Chhola Khasta, Aloo Jeera Sabji (Optional)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Poha With Jalebi And Curd",
+   "extras": "Aloo Bhujiya Pkt",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Poha, Jalebi, Curd Extra: Bhujia Namkeen (Mix)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Fry Idli, Idli, Vada, Sambhar, Nariyal Chutney",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Chhola/Kulcha/Bhatura, Laccha Pyaz, Fruit Custard, Fried Chilies",
+   "extras": "Kabab Roll (Non-Veg), Matar Mushroom, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Parwal Aloo, Arhar Dal, Tadka, Chanch, Neebu Pani/Rasna/Roohafza",
+   "extras": "Tawa Fish (Non-Veg), Ras Malai, Chilli Mushroom, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Kala Chana Sabji, Moong Daal-Motichur Laddoo",
+   "extras": "Veg Noodles, Masala Corn, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Bhindi, Dal Fry, Lemon Rice, Lauki Raita",
+   "extras": "Cheese Cigar Roll",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Dosa (Plain / Masala / Onion), Sambar, Nariyal Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Tawa Paneer / Handi Paneer + Tandoori Roti, Tadka Dal, Roti, Matar Pulao, Veg Cutlet (2 Pc), Sweet, Chicken Chettinad (Non-Veg) / Chicken Lababdar (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Chana-Karela, Dal Palak, Dahi Vada (2 Pc) / Curd + Fruit",
+   "extras": "Vada Pav",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Rajma, Jeera Lauki / Kundru, Fruits / Curd / Jeera Chach",
+   "extras": "Boondi Ladoo, Egg Curry, Chilli Paneer",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Manchurian, Fried Rice, Chawmein, Roti",
+   "extras": "Chicken Biryani (Non-Veg), Matar Mushroom, Milk Cake, Dahi K Sholey",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Bhindi Masala, Moong Dal Tadka, Lachha Pyaz",
+   "extras": "Samosa Chaat, Chicken Malai Tikka (Non-Veg), Honey Chilli Potato, Paneer Do Pyaza, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Veg Manchurian Gravy, Veg Fried Rice, Panchmel Dal",
+   "extras": "Paneer Maharaja, Dum Ka Murg (Non-Veg)",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Razma Masala, Seasonal Vegetables, Rasna",
+   "extras": "Papdi Chaat",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Aloo Parwal Dry / Kundru Dry, Red Masoor Daal",
+   "extras": "Methi Malai Paneer, Chicken Stew With Veggies (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Kathal + Dalma",
+   "extras": "Paneer Kathi Roll, Chicken Ghee Roast (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Seval Upma With Peanut Chutney, Chocos, Boiled Moong And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Lauki Chana Dal/Lobia Dal, Chilli Soyabean",
+   "extras": "Chicken 65 (Non-Veg), Honey Chilly Potato",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Aloo Lobiya + Kadhi + Pyaj Pakori + Chhanch",
+   "extras": "Butter Garlic Chicken (Non-Veg), Paneer Kali Mirch, Aloo Posto, Peda",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Red Masoor + Matar Dal, Mix Veg",
+   "extras": "Aloo Tikki Chat, Afgani Soya Chaap (White Gravy)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Bombay Sandwich, Paneer Cutlet, Macroni, Green Chatni",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Poha, Bhujiya Sev, Jalebi, Curd",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Aloo Baigan, Mix Dal Tadka, Pineapple Raita, Nimbu Pani",
+   "extras": "Chicken Changeji (Non-Veg), Matar Paneer",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Paneer Do Pyaza / Chicken Curry (Non-Veg), Dal Makhni, Veg Pulao, Tandoori Roti, Missi Roti, Naan, Fry Papad, Gulab Jamun",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Lubiya, Aloo Pyaz Sabzi, Jeera Rice",
+   "extras": "Pani Puri, Mutton Kosha (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Kadhi Pakoda / Boondi Kadhi, Jeera Aloo / Madrasi Aloo, Kali Massor Dal, Fruit, Nimbu Pani",
+   "extras": "Masala Pav, Chicken Lollipop (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Veg Pulao, Arhar Daal Tadka, Naan (Plain/Butter Garlic), Tandoori Roti, Missi Roti, Stuffed Vegetables, Methi Malai Paneer/Paneer Butter Masala, Chicken Kalimirch (2 Pcs) (Non-Veg), Handi Chicken (2 Pcs) (Non-Veg), Malai Chamcham, Rasmalai",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Papaya Masoor Daal/Dalma, Taroi Sabji-Curd Rice, Curd/Fruit, Lassi",
+   "extras": "Chilli Paneer, Jhol Fish (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Uttapam/Saboo Daana Khichdi, Tomato+Coconut Chutney, Sambar, Boiled Moong And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Rajma, Baingan Bharta, Boiled Masoor Daal, Besan, Curd/Fruit, Dahi Kebab, Chaach",
+   "extras": "Paneer Tikka, Prawn Malai Curry (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Veg Rajasththani, Panchmel Dal",
+   "extras": "Chicken & Veg Momo (Non-Veg)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Handi Paneer / Matar Paneer / Butter Chicken (Non-Veg) / Chicken Korma (Non-Veg), Chana Dal, (Bathua, Methi) Paratha, Basanti Pulao",
+   "extras": "Moong Dal Halwa",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Pindi Chola Kulcha / Chola Bhatura + Chana Dal + Fruit + Buttermilk / Curd",
+   "extras": "Maalpua",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Aloo Matar Gajar, Chana Dal Tadka",
+   "extras": "Chicken / Egg Biryani (Non-Veg)",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Bhindi Do Pyaza, Arhar Dal, Masala Sattu Drink",
+   "extras": "Chicken Pahadi (Non-Veg), Papdi Chaat",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Masala Dosa, Sambhar With Coconut Chutney",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Kadhai Paneer / Egg Curry (2-Pc), Mix Dal, Boondi Halwa, Masala Chaanch / Curd",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Kundru Ki Sabji, Mix Dal, Plain Paratha, Sweet Sewai",
+   "extras": "Honey Chilli Potato, Dahi Papdi Chaat",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Kadhi Pakoda (Palak / Punjabi / Gujrati), Papad, Jeera Aloo",
+   "extras": "Egg Roll, Kathi Roll",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Manchurian, Hakka Noodles, Malka Masooor Dal, Fried Rice, Chapati",
+   "extras": "Kadhi Panner",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Plain Idli, Masala Idli, Sambhar, Medu Vada, Coconut Chutney Alternate: Uttapam, Medu Vada, Sambhar, Coconut Chutney",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Handi Paneer, Egg Curry, Laccha Paratha, Lauki Halwa",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Urad Dal Kachori With Aloo Ki Sabji / Upma, Bhujiya",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Tari Poha, Dahi - Jalebi + Besan Bhujia",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Paneer Bhurji / Egg Bhurji, Roti / Paratha (Alternate Week)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Kaddu Chana, Mix Daal, Aam Panna",
+   "extras": "Emarti Rabdi, Masala Mushroom, Fish Fry (Non-Veg) / Prawn Malaicurry (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Chana Madra Gravy, Aloo Lobia / Beans, Boondi Raita / Curd, Rooh Afza",
+   "extras": "Paneer Do Pyaza, Red Sauce Pasta, Sweet",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Veg Keema Matar, Jeera Rice, Red Masoor Dal",
+   "extras": "Chicken Moradabadi Biryani (Non-Veg), Paneer Lababdar",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Aloo Taroi Sabji, Black Masoor Dal",
+   "extras": "Chicken-65 (Non-Veg), Handi Paneer",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Uttapam, Punugulu, Sambhar With Coconut Chutney, Tomato Chutney",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Urad Dal Kachori, White Matar Sabji, Red And Green Chutney",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Veg Kofte / Masoor Dal Kofte, Punjabi Dal",
+   "extras": "Hyderabadi Chicken Biryani With Salan And Raita (Non-Veg)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Aloo Pyaz Paratha, Lehsun Chutney, Curd Alternate: Stuffed Moong Dal Chilla",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Uthappam With Sambhar & Coconut-Chutney, Tomato Chatney",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Aloo Karela, Mix Daal",
+   "extras": "Boondi Rabdi, Malai Soya Chaap, Vegetable Fish Curry (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Aloo Matar Ki Sabji, Kadhi Pakoda, Plain Poori / Ajwain Poori, Jeera Rice, Fryms Chips, Tang",
+   "extras": "Chicken Curry (Non-Veg), Paneer Makhani",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Soyabean Masala, Fried Rice, Arhar Dal, Fruit, Aam Panna",
+   "extras": "Kothimbir Vadi, Mustard Fish Curry (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Bhindi Bhujiya, Lal Masoor Dal, Roofaza, Fruit",
+   "extras": "Shukto, Fish Tikka (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Amritsari Pindi Chhole, Tandoori Stuffed Kulche, Imli Pyaz Chutney, Moong Dal, Fruit Custard / Mango Kheer",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "White Matar, Pyaz Paneer Paratha, Mix Veg Paratha, Dal Paratha, Lehsun & Imli Chutney, Rose Lassi",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Malai Kofta, Veg Pulao, Arhar Dal",
+   "extras": "Hakka Noodles",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Lauki Chana, Arhar Dal, Dahi Vada",
+   "extras": "Chicken Nuggets (Non-Veg)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Avadh Dum Veg Biryani, Dal Makahani, Raita",
+   "extras": "Mutton Biryani (Non-Veg)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Veg Sandwich, Mayo Sandwich, Green Chutney, Ketchup",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Uttapam, Sambhar, Coconut Chatni",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Moong Daal, Arbi Gravy / Aloo Soyabean",
+   "extras": "Kajukatli, Dahi Vada, Mutton Biryani + Salan (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Amritsari Chola, Bhatura, Curd / Fruits, Custard",
+   "extras": "Fish Curry (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Paneer Butter Masala, Panchmel Daal, Crispy Corn, Basanti Pulao / Vegetable Pulao, Garlic Naan / Missi Roti, Sweet, Butter Chicken (Non-Veg) / Chicken Kosha (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Jeera Rice, Aloo Matar Rajma, Frymes",
+   "extras": "Fried Chicken Strips (Non-Veg)",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Pindi Chhola, Lal Masoor Dal, Kheer/Sewai, Poori",
+   "extras": "Fish Finger With Tartar Sauce (Non-Veg), Crispy Corn, Chicken Changezi (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Kadhai Paneer/Egg Curry, Panchratan Dal",
+   "extras": "Red Sauce Pasta, Besan Halwa, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Pakodi Kadhi, Aloo Chokha, Lemon Rice, Pakhala/Poita Bhaat/Panta Bhaat, Arhar Daal, Curd/Fruit, Shikanji",
+   "extras": "Paneer 65, Devil Egg",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Kadhai Paneer / Paneer Butter Masala / Chicken Kali Mirch (Non-Veg), Arhar Dal, Pulao, Butter Naan, Tandoori Roti, Gulab Jamun",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Veg Biryani, Salan, Boondi Raita, Dal Makhani, Curd / Fruits",
+   "extras": "Egg Curry, Paneer Jalebi, Paneer Butter Masala",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Paratha (Plain/Paneer/Aloo/Mixed), Chhole Masala, Curd/Fruit, Tang",
+   "extras": "Chicken Sandwich (Non-Veg), Paneer Sandwich, Aloo Taroi Posto",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Bhindi Masala, Aam Daal, Jeera Rice, Curd/Fruit, Dahi Vada, Nimbu Paani",
+   "extras": "Kadhai Paneer, Katla Kalia (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Dosa (Masala/Onion/Plain), Sambar, Coconut Chutney, Tomato Chutney, Boiled Moong, Peanuts And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Matar Musroom + Veg Moong Dal",
+   "extras": "Chicken Rezala (Non-Veg) / Chicken Tikka Masala (Non-Veg), Lachha Paratha, Nawabi Paneer, Crispy Corn",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Vada Pav / Pav Bhaji",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Arbi/Kathal Masala, Arhar Dal Tadka",
+   "extras": "Paneer Dosa, Egg Roll, Paneer Korma, Chicken Biryani (Non-Veg), Chandrakala",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Aloo Soyabean, Masala Khichdi, Arhar Daal Tadka, Sabudana Papad",
+   "extras": "Paneer Kathi Roll, Chilli Chicken (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Pav Bhaji, Fried Chillies, Ketchup, Green Chutney",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "(Poori / Roti, Matar (Yellow) Sabzi, Halwa)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Veg Kohlapuri, Moong Daal",
+   "extras": "Peda, Green Peas Kachori, Aloo Dum, Egg Devil (Non-Veg) / Tandoori Chicken (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Parathas (Aloo, Aloo Pyaj, Sattu), Tomato Ketchup, Green Chutney, Tomato Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Paneer Butter Masala / Paneer Do Pyaza / Chicken Curry (2 Pcs) (Non-Veg), Veg Fried Rice, Arhar Dal Fry, Kulcha, (Garlic Naan, Tandoori Roti) / (Naan-Aata, Maida), French Fries (One Time), Salad (Extra Corn), (Custard / Gulab Jamun / Moong Dal Halwa) / Ice Cream",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Plain Paratha, Aloo Green Matar Bhujia, Tomato Ketchup, Mango Shake",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Chicken Changezi (Non-Veg), Paneer Angara, Basanti Pulao, Tandoori Roti, Plain Naan, Stuffed Naan, Kuchumber Salad, Stuffed Gulab Jamun / Cheena Rausgula",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Maharastrian / Indori + Poha, Jalebi & Curd, Extra Haldiram Bhujiya",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Pav Bhaji Alternate: Vada Pav With Fried Green Chilles",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 2",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Plain Dosa, Masala Dosa With Paneer, Sambhar, Peanut Chutney",
+   "updated": "2026-05-31"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Kathal Ke Kofte, Moong Masoor Dal, Suji Halwa",
+   "extras": "White Sauce Pasta, Achari Paneer Tikka",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 5",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Idli, Masala Idli, Mendu Vada (2-Pc), Sambhar With Coconut Chutney",
+   "updated": "2026-06-09"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Kadhi Pakoda, Aloo Jeera, Pappad / Curd / Fruits, Butter Milk",
+   "extras": "Chicken Roll (Non-Veg), Milk Peda, Chilli Mushroom, Dahi Gujhiya",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Poha, Jalebi, Curd, Namkeen (Aloo Bhujiya / Besan Bhujiya)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Bhindi Masala, Aam Daal (Yellow Peas), Lassi",
+   "extras": "Shahi Tukda, Aloo Posto",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Soya Chaap Masala, Lachha Paratha, Matar Pulao, Arhar Daal",
+   "extras": "Dry Fruit Ladoo / Fruit Custard, Mushroom Masala, Chicken Biryani + Salan (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Dosa / Special Dosa, Nariyal Chutney, Sambhar",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Thursday",
+   "meal": "Breakfast",
+   "menu": "Besan Chilla / Uthappam, Sambhar, Nariyal Chutney",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Dosa, Sambhar, Nariyal Chutney, Tomato Chutney",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Mix Veg, Arhar Dal, Curd / Fruits, Rasna / Jaljeera",
+   "extras": "Fish Curry (Non-Veg), Aloo Chat, Ghujiya",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Chana Taroi, Lal Masoor Dal, Boondi Raita, Neebu Pani/Rasna/Roohafza",
+   "extras": "Paneer Khurchan, Moong Dal Halwa, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Papdi Chaat/Pani Puri, Veg Biryani, Salan, Veg Raita, Mix Veg",
+   "extras": "Chicken Biryani (Non-Veg), Soya Malai Chaap (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Dum Aloo, Veg Biryani, Arhar Dal + Nimbu Pani, Fruit, Curd / Boondi Raita",
+   "extras": "Dahi Papdi Chat, Chicken Roll (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Aloo Beans, Lemon Rice, Dal Makhni",
+   "extras": "Veg Chowmein, Chilli Chicken (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 4",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Uttapam, Sambar, Nariyal Chutney, Tomato Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Paneer Ghee Roast, Egg Masala, Mughlai Chicken (1 Pc) (Any 1) (Non-Veg), Chana Daal, Ice Cream (One Scoop) With Anguri Gulab Jamun, Papad",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "Paratha (Aloo, Mooli, Pyaz), Green Chutney Sauce Milk / Curd / Eggs",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "(Puri + Green Peas Puri + Aloo Matar)] + Sooji Halwa",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Wednesday",
+   "meal": "Breakfast",
+   "menu": "[Uttapam + Sambhar + Coconut Chutney] / [Vada Pav + Green Chutney]",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Kathal + Aloo Bhujiya + Chana Dal + Chhanch",
+   "extras": "Dahi Katla (Non-Veg), Mushroom Paneer Dry, Shahi Tukda",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Masala And Onion Dosa, Sambhar, Coconut Chutney / Peanut Chutney, Tomato Chatney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "[(Aloo Kachori + Matar Kachori + Kaddu Dry) / (Chhole Kulche / Chhole Bahture)] + Arhar Dal + Aam Chutney + Kheer / Sewai",
+   "extras": "Chicken Kali Mirch Dry (Non-Veg) / Fish Tikka (Non-Veg), Paneer Butter Masala, Rabdi",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Karela Dry + Arhar Dal + Lassi",
+   "extras": "Egg Curry, Veg Sukto, Barfi",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Lauki Chana Dal + Torai Dry / Kundru",
+   "extras": "Chicken Biriyani (Non-Veg), Litti Chokha, Milk Cake",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "(Sewai Upma + Nariyal Chutney) / Paratha (Mix, Onion, Sattu), Aam Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Idli + Fried (Onion & Tomato) Idli + Vada + Sambhar + Coconut Chutney / Peanut Chutney",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Paneer Lababdaar / Methi Paneer Or Chicken Masala (3 Pcs) (Non-Veg) + Arhar Dal + Vegetable Pulav + Plain Naan + Tandoori Roti + French Fries + Gulab Jamun",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Bhindi Bhujiya + Arhar Dal",
+   "extras": "Mutton Bhuna Masala (Non-Veg) / Mutton Biryani (Non-Veg), Hakka Noodles, Raj Kachori",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Indori Poha, Jalebi & Curd",
+   "extras": "Aloo Bhujiya",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Paratha (Aloo, Mix-Veg), Paneer Paratha, Chola, Sonth Chutney, Green Chutney, Curd / Fruits",
+   "extras": "Fish Finger (Non-Veg), Shahi Toast",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Bhindi Pyaaz / Aloo Bhindi, Masoor Dal, Curd / Fruits",
+   "extras": "Chilli Chicken (Non-Veg) / Chicken Fried Rice (Non-Veg), Paneer Tikka Masala, Doodh Barfi",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Aloo Sabji, Poori, (Matar) Kachuani, Halwa Chana",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "[Paneer Butter Masala Or Hyderabadi Chicken 2 Pcs.) (Non-Veg)] + Plain Rice + Paratha + Red Masoor Dal + Basanti Pulav + Salad + Fried Papad + Ice Cream",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Paneer/Chicken Korma (Non-Veg), Moong Dal, Naan, Tandoori Roti Pulao, Gulab Jamun, Kachumber Salad, Papad",
+   "extras": "Soya Malai Chaap",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "Aloo Matar, Puri (Palak, Plain, Maida), White Matar Dal, Sewai / Kheer",
+   "extras": "Honey Chilli Potato, Paneer Roll, Tandoori Chicken (Non-Veg) / Chicken Kalimirch (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Paratha (Sattu, Aloo Pyaz), Heeng Aloo, Chana Dal, Boondi Raita, Neebu Pani/Rasna/Roohafza",
+   "extras": "Egg Biryani, Raj Bhog, Paneer Lababdar, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 14",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Kundroo Bhujia / Veg Kofta, Chana Dal Fry",
+   "extras": "Mutton Korma (Non-Veg), Bread Malai Sandwich, Paneer Do Pyaza, Golgaape",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Aloo Baigan Masala, Dal Makhani, Chach/Dahi, Neebu Pani/Rasna/Roohafza",
+   "extras": "Imarti Rabdi, Butter Chicken (Non-Veg), Spring Roll, Hydrabadi Paneer, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Mix Bhajiya, Sewai Upma, Chatni",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Idli, Masala Idli, Wada, Sambhar, Coconut Chatni, Tomato Chatni",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Pyaz Palak Kadhi Pakoda, Aloo Jeera, Frymes, Fruit Raita",
+   "extras": "Chilli Chicken (Non-Veg), Paneer Tikka Masala, Dahi Bhalla, Khoya Gujiya, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Wednesday",
+   "meal": "Lunch",
+   "menu": "Rajma, Baigan Bharta, Frymes, Neebu Pani/Rasna/Roohafza",
+   "extras": "Chicken Bharra (Non-Veg), Chilli Paneer, Malai Boondi, Hakka Noodles, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 12",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Veg Biryani, Kali Masoor Dal, Lauki Jeera, Mint Raita",
+   "extras": "Roasted Chicken (Non-Veg), Paneer Tikka (Dry), Rabdi Malpua, Chicken Fried Rice (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Saturday",
+   "meal": "Breakfast",
+   "menu": "Masala-Dosa, Onion Dosa With Sambhar & Coconut Chatney, Peanut Chatney",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Tuesday",
+   "meal": "Dinner",
+   "menu": "(Baigan Bhartha + Aloo Chakha + Mix Dal",
+   "extras": "Fish Tikka (Non-Veg), Aloo Tikki Chaat, Chenna",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Pakodi-Kadhi, Aloo Baigan, Mix-Veg Moong Daal, Green-Chatney, Fruits / Curd / Lassi, Roasted Papad",
+   "extras": "Jeera Fish (Non-Veg), Coconut Laddu",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Arhar Dal Tadka, Bhindi Pyaj, Jeera-Rice, Fruits / Curd / Lassi, Green Chatney",
+   "extras": "Mustard Fish (Non-Veg), Veg Kabab",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Sunday",
+   "meal": "Dinner",
+   "menu": "Paneer Do Pyaza / Rajesthani Paneer, Dal Makhani, Murgh Rogan Josh (Non-Veg) Prior Booking Option, Tandoori Roti, Missi Roti, Crispy Corn / Sweet Corn, Angoori Gulab-Jamun With Ice-Cream (1 Scoop), Kachumar Salad",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Saturday",
+   "meal": "Dinner",
+   "menu": "Palak Urd Dal Kathal Dry, Green-Chatney",
+   "extras": "Chicken Kassa (Non-Veg) / Chicken Tawa Tikka (Non-Veg), Matar Mushroom, Boondi Rabdi",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Dal Makhani, Arbi Dry / Karela, Fruits / Curd / Jeera Chach",
+   "extras": "Handi Chicken (Non-Veg) / Afgani Chicken (Non-Veg) (Alternate), Tawa Sabzi, Shukto",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Herbed Rice, Mashed Potatoes, Sautéed Veggies, Boiled Moong Dal",
+   "extras": "Garlic Mushroom, Roasted Chicken (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Methi Paratha, Plain Paratha, Beetroot Paratha, Paneer Bhurji, Daal Makhni, Makhana Kheer",
+   "extras": "Litti Chokha, Champaran Mutton (Non-Veg)",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Idli, Stuffed Idli, Masala Idli, Tomato+Coconut Chutney, Sambar, Chocos, Boiled Moong, Peanuts And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Monday",
+   "meal": "Dinner",
+   "menu": "Butter Masoor Dal, Malai Kofta, Mathaa Aloo, Green-Chatney",
+   "extras": "Chicken Biryani (Non-Veg), Imrati Rabdi, Garlic-Mushroom",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Monday",
+   "meal": "Lunch",
+   "menu": "Veg Kohlapuri + Lal Masoor Dal + Aam Pana",
+   "extras": "Katla Kalia (Non-Veg) + Boiled Chicken (Non-Veg), Chilli Paneer, Nariyal Laddu",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Friday",
+   "meal": "Breakfast",
+   "menu": "Paratha (Sattu, Pyaz Paratha, Aloo), Plain Paratha Upma, Besan-Chilla Alt. Butter (10 Gm) Or Peanut Butter (2 Spoons), Tomato-Sauce, Green Chatney, Garlic Chatney, Aloo Dry Jeera",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Wednesday",
+   "meal": "Dinner",
+   "menu": "Mix Dal, Garlic Chatney, Aloo Parwal Dry / Aloo Parwal Gravy",
+   "extras": "Chicken Roasted (Non-Veg) / Chicken Kali Mirch (Non-Veg), Milk-Cake, Honey Chilly Potato",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Sunday",
+   "meal": "Lunch",
+   "menu": "Chana Dal, Aloo Chana Masala, Paratha (Aloo Pyaaz Mix, Mix Paratha, Plain, Paneer Paratha (1 Pc)), Fruits / Curd / Jeera Chach, Green-Chatney",
+   "extras": "Mutton Curry (Non-Veg)",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Lubiya Dal, Aloo Beans, Khichdi / Tahari (Alternate), Fruits / Curd / Lassi, Fried Roasted Papad, Green Chatney",
+   "extras": "Katla Kaliya (Non-Veg), Malai Laddu",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Poha, Jalebi, Dhokla, Banana Shake, Mango Shake (Instead Of Milk, Banana And Egg), Chocos, Boiled Moong And Chana",
+   "updated": "2026-06-12"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Basanti Pulao, Malai Kofta, Chana Dal",
+   "extras": "Veg Kebab Paratha, Mutton Kosha (Non-Veg) / Rajasthani Lal Maas (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Alu Lobia / Taroi, Masoor Dal, Chaas",
+   "extras": "Boondi Laddu, Shukto, Chicken Kosha (Non-Veg) / Methi Malai Chicken (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Saturday",
+   "meal": "Lunch",
+   "menu": "Paratha [Paneer (1 Pc.) Aloo, Mix-Veg] Chhole, Hari Dhaniya Chutney, Lassi",
+   "extras": "Moong Dal Halwa, Chilli Paneer, Mutton Kebab Paratha (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Friday",
+   "meal": "Lunch",
+   "menu": "Aloo Lauki Chana, Daal Makhani",
+   "extras": "Dahi Kebab, Fish Mustard Curry (Rohu / Katla) (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Sunday",
+   "meal": "Breakfast",
+   "menu": "Poha, Jalebi, Aloo Sabji / Namkeen",
+   "extras": "Dahi",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 11",
+   "day": "Thursday",
+   "meal": "Lunch",
+   "menu": "Black Chana Gravy + Sabut Masoor Dal + Veg Biriyani + Vegetable Raita + Chhanch",
+   "extras": "Fish Finger (Non-Veg), Shahi Paneer, Boondi Rabdi",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Friday",
+   "meal": "Dinner",
+   "menu": "Moongdaal, Bhatura, Pindi-Chhola, Turai, Prime Chips, Fruit Raita, Galka-Chatney",
+   "extras": "Mutton Biryani (Non-Veg), Maalpua (Cooked In Deshi Ghee), Boiled Chicken (Non-Veg), Dahi Kabab",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 8",
+   "day": "Tuesday",
+   "meal": "Lunch",
+   "menu": "Kadhi Pakodi (Daal Pakode), Jeera Rice, Fried & Roasted Papad, Aloo Dry, Nimbu Paani",
+   "extras": "Doodh Barfi, Paneer Tikka, Chettinad Chicken (Non-Veg) / Pallipalaym Chicken (Non-Veg)",
+   "updated": "2026-06-10"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Monday",
+   "meal": "Breakfast",
+   "menu": "Suji, Halwa, Chana, Aloo Green Matar Sabzi, Ajwain Puri",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "Hall 7",
+   "day": "Thursday",
+   "meal": "Dinner",
+   "menu": "Arhar Dal, Kadhai Paneer, Chicken Maharaja (Non-Veg) / Butter Chicken (Non-Veg) (Alternate) Prior Booking In Option, Tandoor-Roti, Naan, Plain Roti, Veg-Pulao, Garlic Naan, French-Fries, Green Chutney, Salad, Vinegar-Pyaaz, Stuffed Gulab Jamun / Rasmalai",
+   "updated": "2026-06-11"
+  },
+  {
+   "hall": "GH 1",
+   "day": "Tuesday",
+   "meal": "Breakfast",
+   "menu": "Atta Puri, Maida Puri With Ghugni, Sooji Halwa, Cornflakes, Chocos, Boiled Peanuts, Moong And Chana",
+   "updated": "2026-06-12"
+  }
+ ]
+}
