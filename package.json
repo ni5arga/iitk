@@ -1,0 +1,32 @@
+{
+  "name": "iitk-nis-pet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Map of IIT Kanpur with the things students actually look for, plus one fast search over all of it.",
+  "scripts": {
+    "fetch": "node scripts/fetch-osm.mjs",
+    "build:data": "node scripts/build-data.mjs",
+    "dev": "npm run build:data && vite",
+    "build": "npm run build:data && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "npm run typecheck && npm run build:data && npm run smoke",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "wait-on": "^9.1.0"
+  },
+  "dependencies": {
+    "maplibre-gl": "^4.7.1"
+  },
+  "homepage": "https://iitk.nis.pet",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ni5arga/iitk.git"
+  }
+}
