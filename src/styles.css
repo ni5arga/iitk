@@ -148,21 +148,38 @@ kbd {
 #brand-btn span { color: var(--fg-3); font-weight: 500; }
 #brand-btn:hover span { color: var(--accent); }
 
+/* The one control everything else hangs off, so it gets to be the loudest
+   thing on the map: wider, lifted, and the only accent-bordered surface. */
 #open-search {
-  flex: 0 1 320px;
+  flex: 0 1 440px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 7px 10px;
+  gap: 11px;
+  padding: 11px 14px;
   background: var(--bg-1);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
-  color: var(--fg-3);
-  font-size: 12.5px;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  box-shadow: var(--lift);
+  color: var(--fg-2);
+  font-size: 13.5px;
 }
-#open-search:hover { border-color: var(--line-2); color: var(--fg-2); }
+#open-search svg { flex: none; color: var(--accent); }
 #open-search .ph { flex: 1; text-align: left; }
+#open-search .ph b { color: var(--fg); font-weight: 600; }
+#open-search kbd {
+  flex: none;
+  padding: 3px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--bg-2);
+  font-size: 10.5px;
+}
+#open-search:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+#open-search:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 #theme-btn {
   flex: none;
@@ -507,10 +524,8 @@ kbd {
     bottom: calc(var(--pad) + env(safe-area-inset-bottom));
     flex: none;
     margin: 0;
-    padding: 13px 14px;
-    font-size: 14px;
-    border-color: var(--line-2);
-    box-shadow: var(--lift);
+    padding: 14px;
+    font-size: 15px;
     z-index: 9;
   }
   #open-search kbd { display: none; }
