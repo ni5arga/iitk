@@ -20,8 +20,9 @@ opening hours — and one fast search over all of it.
 </table>
 
 <p align="center">
-  <img src="docs/screenshots/mobile.png" width="300" alt="Mobile layout">
-  <br><sub>Mobile: search in thumb reach, results as a bottom sheet</sub>
+  <img src="docs/screenshots/mobile.png" width="280" alt="Mobile layout">
+  <img src="docs/screenshots/mobile-layers.png" width="280" alt="Layer sheet on mobile">
+  <br><sub>Mobile: search in thumb reach, layers behind a toggle rather than strewn over the map</sub>
 </p>
 
 ```
