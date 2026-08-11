@@ -153,6 +153,7 @@ lands silently on the live site.
 
 ## Licence
 
-Code MIT. Map data © OpenStreetMap contributors, [ODbL](https://www.openstreetmap.org/copyright).
-Faculty and mess data belong to their respective publishers and are mirrored
-here for a student tool, not relicensed.
+Code [MIT](LICENSE). Map data © OpenStreetMap contributors,
+[ODbL](https://www.openstreetmap.org/copyright). Faculty and mess snapshots
+belong to their publishers and are mirrored here for a student tool, not
+relicensed. Label glyphs derive from Noto Sans (OFL 1.1).

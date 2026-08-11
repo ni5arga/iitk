@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Map of IIT Kanpur with the things students actually look for, plus one fast search over all of it.",
+  "license": "MIT",
   "scripts": {
     "fetch": "node scripts/fetch-osm.mjs",
     "build:data": "node scripts/build-data.mjs",
