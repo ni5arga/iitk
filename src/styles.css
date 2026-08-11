@@ -239,7 +239,11 @@ kbd {
 #attrib a { color: inherit; text-decoration: none; }
 #attrib a:hover { text-decoration: underline; }
 
-#layers {
+/* Desktop: an inline cloud of chips in the dock. The head and the toggle
+   button belong to the phone layout only. */
+#layers-btn { display: none; }
+.layers-head { display: none; }
+#layer-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 2px 12px;
@@ -549,23 +553,107 @@ kbd {
   #foot a { padding: 6px 10px; font-size: 12px; }
   body:has(#panel:not([hidden])) #foot { display: none; }
 
+  /* Eighteen labels loose over the map is clutter whichever way they wrap, so
+     on a phone the legend gets a container and a toggle instead. */
+  #layers-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    padding: 6px 9px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    color: var(--fg-2);
+  }
+  #layers-btn .dots {
+    width: 13px; height: 13px;
+    background:
+      radial-gradient(circle at 3px 3px, currentColor 2px, transparent 2.4px),
+      radial-gradient(circle at 10px 3px, currentColor 2px, transparent 2.4px),
+      radial-gradient(circle at 3px 10px, currentColor 2px, transparent 2.4px),
+      radial-gradient(circle at 10px 10px, currentColor 2px, transparent 2.4px);
+  }
+  #layers-btn .n { font-family: var(--mono); font-size: 11px; }
+  #layers-btn[aria-expanded="true"] { color: var(--fg); border-color: var(--accent); }
+
   #layers {
     position: fixed;
-    top: calc(var(--pad) + 32px);
     left: 0; right: 0;
-    z-index: 5;
+    bottom: 0;
+    z-index: 10;
     max-width: none;
-    padding: 2px var(--pad) 6px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 16px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
+    max-height: 62svh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    border-top: 1px solid var(--line-2);
+    border-radius: 12px 12px 0 0;
+    box-shadow: var(--lift);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateY(101%);
+    visibility: hidden;
+    transition: transform .18s ease, visibility .18s;
   }
-  #layers::-webkit-scrollbar { display: none; }
-  .chip { padding: 6px 0; font-size: 12.5px; }
-  .chip .dot { width: 8px; height: 8px; }
+  #layers.open { transform: none; visibility: visible; }
+
+  .layers-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 16px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .layers-head .t { flex: 1; font-size: 14px; font-weight: 600; }
+  .layers-head button {
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--fg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+  .layers-head .layers-close {
+    border: none;
+    padding: 0 4px;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--fg-3);
+  }
+
+  #layer-chips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    overflow-y: auto;
+    padding: 6px 10px calc(14px + env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  /* In the sheet a chip is a list row, not floating text. */
+  .chip {
+    padding: 11px 8px;
+    font-size: 13.5px;
+    border-radius: var(--r);
+    text-shadow: none;
+    opacity: .45;
+  }
+  .chip[aria-pressed="true"] { opacity: 1; }
+  .chip .dot { width: 9px; height: 9px; box-shadow: none; opacity: 1; }
+  .chip .n {
+    display: inline;
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--fg-3);
+  }
+
+  #layers-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    background: var(--scrim);
+  }
+  #layers-scrim[hidden] { display: none; }
 
   /* Detail becomes a bottom sheet that clears the search bar. */
   #panel {
@@ -597,15 +685,22 @@ kbd {
   /* When the sheet is up, the search bar would sit on top of it. */
   body:has(#panel:not([hidden])) #open-search { display: none; }
 
+  /* The wrapped legend now owns the top, so the route badge stacks above the
+     search bar instead. */
   #route-badge {
-    bottom: auto;
-    top: calc(var(--pad) + 66px);
+    top: auto;
+    bottom: calc(var(--pad) + 58px + env(safe-area-inset-bottom));
     left: var(--pad); right: var(--pad);
     transform: none;
     justify-content: space-between;
     box-shadow: var(--lift);
   }
-  #route-badge .via { max-width: 38vw; }
+  #route-badge .via { max-width: 34vw; }
+
+  /* Only one thing can sit in that slot: the route badge wins over the source
+     link, and the detail sheet covers both. */
+  body:has(#route-badge:not([hidden])) #foot { display: none; }
+  body:has(#panel:not([hidden])) #route-badge { display: none; }
 
   /* Palette fills the screen — a centred box is wrong on a phone. */
   #palette { padding: 0; align-items: stretch; }

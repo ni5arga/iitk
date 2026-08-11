@@ -125,28 +125,58 @@ async function start() {
     .filter(([c]) => campus.meta.counts[c])
     .sort((a, b) => (campus.meta.counts[b[0]] ?? 0) - (campus.meta.counts[a[0]] ?? 0))
 
+  const chipBox = document.getElementById('layer-chips')!
+  const layersBtn = document.getElementById('layers-btn')!
+
   function paintRail() {
-    rail.innerHTML = cats.map(([c, meta]) =>
+    chipBox.innerHTML = cats.map(([c, meta]) =>
       `<button class="chip" data-cat="${c}" aria-pressed="false" style="color:${catColour(c)}"
          title="${meta.label} · ${campus.meta.counts[c]}">
-         <span class="dot"></span>${meta.label}
+         <span class="dot"></span>${meta.label}<span class="n">${campus.meta.counts[c]}</span>
        </button>`).join('')
     paintChips()
   }
   paintRail()
 
   function paintChips() {
-    rail.querySelectorAll<HTMLElement>('.chip').forEach((c) =>
+    chipBox.querySelectorAll<HTMLElement>('.chip').forEach((c) =>
       c.setAttribute('aria-pressed', String(active.has(c.dataset.cat!))))
+    layersBtn.querySelector('.n')!.textContent = `${active.size}`
+    layersBtn.setAttribute('aria-label', `Layers — ${active.size} of ${cats.length} shown`)
   }
 
   rail.addEventListener('click', (e) => {
-    const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement | null
+    const t = e.target as HTMLElement
+    if (t.closest('.layers-close')) { closeLayers(); return }
+    if (t.closest('[data-all]')) { cats.forEach(([c]) => active.add(c)); refreshPois(); return }
+    if (t.closest('[data-none]')) { active.clear(); refreshPois(); return }
+    const chip = t.closest('.chip') as HTMLElement | null
     if (!chip) return
     const c = chip.dataset.cat!
     active.has(c) ? active.delete(c) : active.add(c)
     refreshPois()
   })
+
+  // The sheet only exists on narrow screens; on desktop the chips are always
+  // laid out in the dock and the button is hidden.
+  const scrim = document.createElement('div')
+  scrim.id = 'layers-scrim'
+  scrim.hidden = true
+  document.body.append(scrim)
+
+  function openLayers() {
+    rail.classList.add('open')
+    scrim.hidden = false
+    layersBtn.setAttribute('aria-expanded', 'true')
+  }
+  function closeLayers() {
+    rail.classList.remove('open')
+    scrim.hidden = true
+    layersBtn.setAttribute('aria-expanded', 'false')
+  }
+  layersBtn.addEventListener('click', () =>
+    rail.classList.contains('open') ? closeLayers() : openLayers())
+  scrim.addEventListener('click', closeLayers)
 
   /* ── routing ──────────────────────────────────────────────────────────── */
 
@@ -358,9 +388,9 @@ async function start() {
     `${campus.mess?.items.length ?? 0} menus — click for sources`
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('palette')!.hidden) {
-      hidePanel(); focusId = null; refreshPois()
-    }
+    if (e.key !== 'Escape' || !document.getElementById('palette')!.hidden) return
+    if (rail.classList.contains('open')) { closeLayers(); return }
+    hidePanel(); focusId = null; refreshPois()
   })
 
   // A style or asset failure otherwise leaves the boot overlay up forever, which
