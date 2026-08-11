@@ -50,12 +50,17 @@ and what each gap needs.
 | Faculty directory | [iitk.ac.in/iitk-faculty](https://www.iitk.ac.in/iitk-faculty) + profile pages | 663 people, 445 placed on the map |
 | Mess menus | [campusmess.in](https://campusmess.in) public API | 189 menus, 14 halls |
 
-The faculty listing renders 12 people per department and hides the rest behind
-a Load More button that POSTs to `/loadmore-faculty?count=N&taxon=T`. The
-fetcher walks that endpoint for all 21 paged departments, so this is the whole
-roll — 663 people, of whom 59 hold joint appointments and are stored once with
-every department they belong to. A smoke test fails the build if the count
-drops back toward 305 or any department comes back short.
+That listing renders 12 people per department and hides the rest behind a Load
+More button, which POSTs to `/loadmore-faculty?count=N&taxon=T`. The fetcher
+walks that endpoint across the 21 paged departments — of 27 total; the other six
+fit on one page — so this is everything the directory publishes. Whether that
+equals every person employed as faculty is IIT Kanpur's business, not something
+this repo can verify.
+
+663 people across 739 department slots: 59 hold joint appointments and are
+stored once, carrying all of their departments. Smoke tests fail the build if
+the count falls below 600, if any department comes back short, or if one person
+lands in the index twice.
 
 Deliberately **not** used: `iitk.ac.in/counsel/family_tree/data.json`. It is a
 mentor/mentee tree of named students with roll numbers from the 2008–09 batches.

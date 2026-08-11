@@ -195,8 +195,9 @@ export function showAbout(campus: Campus) {
     ${f ? `<div class="p-sec">Faculty</div>
     <p class="p-note"><b>${f.items.length}</b> people from
     <a href="${esc(f._source)}" target="_blank" rel="noopener">iitk.ac.in/iitk-faculty</a>,
-    fetched ${esc(f._fetched.slice(0, 10))} — the whole roll, paged out from behind that
-    page's Load More buttons. ${f._located ?? 0} are placed on the map from their listed office.
+    fetched ${esc(f._fetched.slice(0, 10))} — everything that directory publishes, paged out
+    from behind its Load More buttons. ${f._located ?? 0} are placed on the map from their
+    listed office.
     ${f._incomplete_departments?.length
       ? `<br><br><b>${f._incomplete_departments.length} departments came back short</b> on the
          last fetch: ${f._incomplete_departments.map((d) => `${esc(d.dept)} ${d.got}/${d.expected}`).join(', ')}.`

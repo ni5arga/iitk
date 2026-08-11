@@ -4,7 +4,7 @@
 //   node scripts/fetch-web.mjs --only=mess  # just one source
 //   node scripts/fetch-web.mjs --no-profiles  # skip the 300 profile fetches
 //
-//   Sources, all public and unauthenticated:
+// Sources, all public and unauthenticated:
 //   faculty  www.iitk.ac.in/iitk-faculty  + one profile page per person
 //   mess     campusmess.in/api/{halls,menus}
 
@@ -55,7 +55,6 @@ const strip = (s) => s.replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/
 async function fetchFaculty(withProfiles) {
   const html = await get('https://www.iitk.ac.in/iitk-faculty')
 
-  // Department headings and faculty cards, read in document order so each
   // Cards, department headings and "Load More" buttons, read in document order
   // so each card inherits the heading above it and each button the department
   // it belongs to. The listing page markup uses double quotes; the AJAX
@@ -102,7 +101,8 @@ async function fetchFaculty(withProfiles) {
   if (!list.length) throw new Error('faculty: parsed 0 cards — the page markup changed')
 
   // The listing renders 12 per department and hides the rest behind a button
-  // that POSTs to /loadmore-faculty. Page through it so this is the whole roll.
+  // that POSTs to /loadmore-faculty. Page through it to get everything the
+  // directory publishes — which is not necessarily every faculty member.
   const PAGE = 12
   const jobs = []
   for (const d of pending) {
@@ -228,7 +228,7 @@ async function fetchFaculty(withProfiles) {
   return {
     _source: 'https://www.iitk.ac.in/iitk-faculty',
     _fetched: new Date().toISOString(),
-    _note: 'Public faculty directory published by IIT Kanpur. The listing page shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it is the full roll.',
+    _note: 'Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.',
     _incomplete_departments: short.map((d) => ({ dept: d.dept, got: perDept[d.dept] ?? 0, expected: d.total })),
     items: list,
   }
