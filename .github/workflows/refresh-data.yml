@@ -48,7 +48,7 @@ jobs:
             const c = require("./public/data/campus.json");
             const fail = (m) => { console.error("FAIL: " + m); process.exit(1) };
             if (c.pois.length < 200) fail(`only ${c.pois.length} POIs`);
-            if ((c.faculty?.items.length ?? 0) < 200) fail(`only ${c.faculty?.items.length ?? 0} faculty`);
+            if ((c.faculty?.items.length ?? 0) < 600) fail(`only ${c.faculty?.items.length ?? 0} faculty`);
             if ((c.mess?.items.length ?? 0) < 100) fail(`only ${c.mess?.items.length ?? 0} mess menus`);
             console.log(`ok: ${c.pois.length} pois, ${c.faculty.items.length} faculty, ${c.mess.items.length} menus`);
           '
