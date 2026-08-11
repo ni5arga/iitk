@@ -1,0 +1,24 @@
+{
+  "_readme": "Hand-surveyed places that OpenStreetMap does not carry yet — printers, vending machines, water coolers, night shops. INTENTIONALLY EMPTY: this repo hosts no invented data. Add a row only after someone has physically checked it, then either add it here or (better) contribute it straight to OpenStreetMap so everyone gets it.",
+  "_source": "survey",
+  "_schema": {
+    "id": "unique slug, required",
+    "name": "display name, required",
+    "cat": "one of the category keys in scripts/build-data.mjs, required",
+    "anchor": "EXACT name of an existing OSM feature — the build resolves the position from it and warns if it stops matching. Required; never write raw coordinates here.",
+    "hours": "opening_hours syntax, e.g. 'Mo-Fr 09:00-20:00' or '24/7'",
+    "desc": "one line of why a student cares",
+    "price": "optional, e.g. '₹2 /page'",
+    "wheelchair": "yes | limited | no",
+    "capacity": "optional, for cycle stands"
+  },
+  "_example": {
+    "id": "pr-lib",
+    "name": "Library Print & Scan",
+    "cat": "print",
+    "anchor": "P K Kelkar Library",
+    "hours": "Mo-Fr 09:00-20:00",
+    "desc": "A4 b/w and colour, scan-to-email"
+  },
+  "items": []
+}
