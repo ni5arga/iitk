@@ -63,12 +63,6 @@ stored once, carrying all of their departments. Smoke tests fail the build if
 the count falls below 600, if any department comes back short, or if one person
 lands in the index twice.
 
-Deliberately **not** used: `iitk.ac.in/counsel/family_tree/data.json`. It is a
-mentor/mentee tree of named students with roll numbers from the 2008–09 batches.
-It contains no faculty, so it does not answer "prof \<name\>", and turning a
-stale list of individuals into a searchable directory goes further than the page
-that publishes it.
-
 ## Running it
 
 ```bash
@@ -139,13 +133,14 @@ src/
 Most of the physical world — printers, water coolers, cycle stands, opening
 hours, step-free access — belongs in **OpenStreetMap** rather than here. Map it
 once there and this picks it up on the next `npm run fetch`, along with every
-other OSM consumer.
+other OSM consumer. For contributing to OSM, please refer to: [OpenStreetMap Web - IIT Kanpur](https://www.openstreetmap.org/#map=15/26.51317/80.22539).
 
 For anything OSM will not take, add it to `data/curated/places.json` with an
 `anchor` naming a real OSM feature — never raw coordinates. The build resolves
 the position and warns if the anchor stops matching.
 
-Pull requests: [github.com/ni5arga/iitk](https://github.com/ni5arga/iitk)
+For code changes/features/suggustions, feel free to make an issue or a pull request in this repo - if I somehow miss it, please do not
+hesitate to tag me in the issue/PR thread. 
 
 ## Deploying
 
