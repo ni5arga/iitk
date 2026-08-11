@@ -56,29 +56,103 @@ async function fetchFaculty(withProfiles) {
   const html = await get('https://www.iitk.ac.in/iitk-faculty')
 
   // Department headings and faculty cards, read in document order so each
-  // card inherits the heading above it.
-  const re = /<div class="ui--acoord-item--heading">\s*<span>([^<]+)<\/span>|<div class="iitk__faculty-card[^"]*">\s*<a href="([^"]+)"><\/a>[\s\S]*?<h4>([^<]*)<\/h4>\s*<p>([^<]*)<\/p>/g
+  // Cards, department headings and "Load More" buttons, read in document order
+  // so each card inherits the heading above it and each button the department
+  // it belongs to. The listing page markup uses double quotes; the AJAX
+  // fragments below use single quotes, hence ['"] throughout.
+  const CARD = `<div class=['"]iitk__faculty-card[^'"]*['"]>\\s*<a href=['"]([^'"]+)['"]>\\s*</a>[\\s\\S]*?<h4>([^<]*)</h4>\\s*<p>([^<]*)</p>`
+  const HEADING = `<div class="ui--acoord-item--heading">\\s*<span>([^<]+)</span>`
+  const MORE = `data-count="(\\d+)"\\s+data-totalcount="(\\d+)"\\s+data-taxon="(\\d+)"`
+
+  const parseCards = (frag, dept) => {
+    const out = []
+    const re = new RegExp(CARD, 'g')
+    let m
+    while ((m = re.exec(frag))) {
+      out.push({
+        name: strip(m[2]),
+        title: strip(m[3]),
+        dept,
+        url: m[1].startsWith('http') ? m[1] : `https://www.iitk.ac.in${m[1]}`,
+      })
+    }
+    return out
+  }
+
   const list = []
-  let m, dept = ''
-  while ((m = re.exec(html))) {
-    if (m[1]) { dept = strip(m[1]); continue }
-    list.push({
-      name: strip(m[3]),
-      title: strip(m[4]),
-      dept,
-      url: m[2].startsWith('http') ? m[2] : `https://www.iitk.ac.in${m[2]}`,
-    })
+  const pending = [] // departments that have more behind a Load More button
+  {
+    const re = new RegExp(`${HEADING}|${CARD}|${MORE}`, 'g')
+    let m, dept = ''
+    while ((m = re.exec(html))) {
+      if (m[1]) { dept = strip(m[1]); continue }
+      if (m[2]) {
+        list.push({
+          name: strip(m[3]),
+          title: strip(m[4]),
+          dept,
+          url: m[2].startsWith('http') ? m[2] : `https://www.iitk.ac.in${m[2]}`,
+        })
+        continue
+      }
+      // A Load More button: data-totalcount is the department's real size.
+      pending.push({ dept, from: +m[5], total: +m[6], taxon: +m[7] })
+    }
   }
   if (!list.length) throw new Error('faculty: parsed 0 cards — the page markup changed')
 
-  // The listing renders at most 12 people per department. Record that so the
-  // app can say so rather than implying it is the whole faculty.
-  const perDept = {}
-  for (const f of list) perDept[f.dept] = (perDept[f.dept] || 0) + 1
-  const capped = Object.entries(perDept).filter(([, n]) => n >= 12).map(([d]) => d)
+  // The listing renders 12 per department and hides the rest behind a button
+  // that POSTs to /loadmore-faculty. Page through it so this is the whole roll.
+  const PAGE = 12
+  const jobs = []
+  for (const d of pending) {
+    for (let page = d.from; page * PAGE < d.total; page++) jobs.push({ ...d, page })
+  }
 
-  console.log(`faculty: ${list.length} cards across ${Object.keys(perDept).length} departments`)
-  if (capped.length) console.log(`  note: ${capped.length} departments hit the 12-per-department listing cap`)
+  if (jobs.length) {
+    const advertised = pending.reduce((s, d) => s + d.total, 0)
+    console.log(`faculty: ${list.length} on the first page; ${pending.length} departments ` +
+                `advertise ${advertised} total — fetching ${jobs.length} more pages`)
+    const pages = await pool(jobs, 6, async (j) => {
+      const url = `https://www.iitk.ac.in/loadmore-faculty?count=${j.page}&taxon=${j.taxon}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=replace',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return parseCards(await res.text(), j.dept)
+    })
+    const missed = pages.filter((p) => p === null).length
+    if (missed) console.warn(`  ! ${missed} of ${jobs.length} load-more pages failed`)
+    for (const p of pages) if (p) list.push(...p)
+  }
+
+  // One record per person. Joint appointments are real — Ashutosh Sharma is
+  // listed under four units — so collect every department rather than dropping
+  // the duplicate listing.
+  const byPerson = new Map()
+  for (const f of list) {
+    const key = f.url.replace(/^https?:\/\/[^/]+/, '').replace(/^\/main\//, '/').toLowerCase()
+    const hit = byPerson.get(key)
+    if (hit) { if (!hit.depts.includes(f.dept)) hit.depts.push(f.dept); continue }
+    byPerson.set(key, { ...f, depts: [f.dept] })
+  }
+  list.length = 0
+  list.push(...byPerson.values())
+
+  // Completeness is per department listing, so count by membership, not by the
+  // primary department — otherwise cross-listed people read as missing.
+  const inDept = (d) => list.filter((f) => f.depts.includes(d)).length
+  const short = pending.filter((d) => inDept(d.dept) < d.total)
+  const departments = new Set(list.flatMap((f) => f.depts))
+
+  console.log(`faculty: ${list.length} people across ${departments.size} departments ` +
+              `(${list.filter((f) => f.depts.length > 1).length} hold joint appointments)`)
+  if (short.length) {
+    console.warn(`  ! ${short.length} departments came back short: ` +
+      short.map((d) => `${d.dept} ${inDept(d.dept)}/${d.total}`).join(', '))
+  }
 
   if (withProfiles) {
     console.log(`  fetching ${list.length} profile pages (concurrency 6)…`)
@@ -128,13 +202,34 @@ async function fetchFaculty(withProfiles) {
     const withEmail = list.filter((f) => f.email).length
     const withOffice = list.filter((f) => f.office).length
     console.log(`  enriched: ${withEmail} emails, ${withOffice} offices`)
+
+    // A few people have two profile pages under different slugs
+    // (vivek-verma and vivek_verma). The URL key cannot see that; the email
+    // can, so collapse on it once profiles are in.
+    const byEmail = new Map()
+    const merged = []
+    for (const f of list) {
+      if (!f.email) { merged.push(f); continue }
+      const hit = byEmail.get(f.email)
+      if (!hit) { byEmail.set(f.email, f); merged.push(f); continue }
+      for (const d of f.depts) if (!hit.depts.includes(d)) hit.depts.push(d)
+      // Keep whichever record is more complete.
+      for (const k of ['office', 'phone', 'web', 'research', 'qualification']) {
+        if (!hit[k] && f[k]) hit[k] = f[k]
+      }
+    }
+    if (merged.length !== list.length) {
+      console.log(`  merged ${list.length - merged.length} duplicate profile pages by email`)
+      list.length = 0
+      list.push(...merged)
+    }
   }
 
   return {
     _source: 'https://www.iitk.ac.in/iitk-faculty',
     _fetched: new Date().toISOString(),
-    _note: 'Public faculty directory published by IIT Kanpur. The listing page shows up to 12 people per department, so this is a subset, not the full faculty roll.',
-    _capped_departments: capped,
+    _note: 'Public faculty directory published by IIT Kanpur. The listing page shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it is the full roll.',
+    _incomplete_departments: short.map((d) => ({ dept: d.dept, got: perDept[d.dept] ?? 0, expected: d.total })),
     items: list,
   }
 }

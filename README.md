@@ -47,12 +47,15 @@ and what each gap needs.
 |---|---|---|
 | Places, geometry, opening hours, wheelchair tags | [OpenStreetMap](https://www.openstreetmap.org/relation/52434888) (ODbL) | 276 places, 20 lecture halls |
 | Walking & cycling network | OpenStreetMap paths, footways, corridors, steps | 1145 nodes / 1294 edges |
-| Faculty directory | [iitk.ac.in/iitk-faculty](https://www.iitk.ac.in/iitk-faculty) + profile pages | 305 people, 164 placed on the map |
+| Faculty directory | [iitk.ac.in/iitk-faculty](https://www.iitk.ac.in/iitk-faculty) + profile pages | 663 people, 445 placed on the map |
 | Mess menus | [campusmess.in](https://campusmess.in) public API | 189 menus, 14 halls |
 
-The faculty listing shows at most **12 people per department**, so it is a
-subset, not the full roll — the app states this rather than implying coverage
-it does not have.
+The faculty listing renders 12 people per department and hides the rest behind
+a Load More button that POSTs to `/loadmore-faculty?count=N&taxon=T`. The
+fetcher walks that endpoint for all 21 paged departments, so this is the whole
+roll — 663 people, of whom 59 hold joint appointments and are stored once with
+every department they belong to. A smoke test fails the build if the count
+drops back toward 305 or any department comes back short.
 
 Deliberately **not** used: `iitk.ac.in/counsel/family_tree/data.json`. It is a
 mentor/mentee tree of named students with roll numbers from the 2008–09 batches.
@@ -101,7 +104,7 @@ people, mess menus, layers, commands. Ranking is exact-key, then prefix, then a
 subsequence match with contiguity and word-boundary bonuses, then all-words-present,
 then substring. `mess dinner` is intercepted before generic ranking so it answers
 with tonight's food rather than a list of halls. Typical query: **under 0.3 ms**
-over 613 documents.
+over 971 documents.
 
 **Opening hours** are parsed by a deliberately partial `opening_hours` reader
 that returns `null` for anything it does not understand. A wrong "open now" is

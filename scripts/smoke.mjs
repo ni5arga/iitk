@@ -67,6 +67,31 @@ if (someone) {
   ok(found, `surname "${surname}" finds ${someone.name}`)
 }
 
+// The listing page shows 12 per department behind a Load More button. If the
+// paging breaks we fall back to ~305 people and nobody notices.
+const fac = campus.faculty
+if (fac) {
+  ok(fac.items.length > 600, `faculty roll is complete (${fac.items.length})`,
+     fac.items.length <= 600 ? 'load-more paging probably broke' : '')
+  ok((fac._incomplete_departments ?? []).length === 0, 'no department came back short',
+     (fac._incomplete_departments ?? []).map((d) => `${d.dept} ${d.got}/${d.expected}`).join(', '))
+
+  // One card per person, even for the 59 with joint appointments.
+  const byUrl = new Map()
+  for (const f of fac.items) byUrl.set(f.url, (byUrl.get(f.url) ?? 0) + 1)
+  const repeats = [...byUrl].filter(([, n]) => n > 1)
+  ok(repeats.length === 0, 'no duplicate faculty records',
+     repeats.slice(0, 3).map(([u]) => u).join(', '))
+
+  // Searching a cross-listed name must return exactly one row.
+  const joint = fac.items.find((f) => f.depts?.length > 1)
+  if (joint) {
+    const hits = index.search(joint.name).filter((h) => h.person?.url === joint.url)
+    ok(hits.length === 1, `"${joint.name}" appears once despite ${joint.depts.length} departments`,
+       `${hits.length} rows`)
+  }
+}
+
 // Known gaps must return nothing rather than a bad guess.
 ok(index.search('PH101').every((h) => h.kind !== 'place' || !/PH101/i.test(h.title)),
    'PH101 has no fake course result')
