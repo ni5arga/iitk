@@ -269,9 +269,19 @@ async function main() {
     return hit
   }
 
-  // Curated POIs (printers, vending, water coolers OSM lacks, …)
+  // Curated POIs (printers, vending, whole buildings OSM has not mapped yet).
+  // Two ways to place one: `lat`/`lon` from an actual survey, or an `anchor`
+  // naming an existing OSM feature to sit beside.
   let curatedCount = 0
   for (const p of curated.places?.items ?? []) {
+    if (p.lat != null && p.lon != null) {
+      if (!inCampus(p.lon, p.lat)) { warn(`curated "${p.id}" is outside the campus boundary`); continue }
+      const { anchor, ...rest } = p
+      void anchor
+      byId.set(p.id, { ...rest, lat: +(+p.lat).toFixed(6), lon: +(+p.lon).toFixed(6), src: 'seed' })
+      curatedCount++
+      continue
+    }
     const a = resolveAnchor(p.anchor, `places/${p.id}`)
     if (!a) continue
     // Deterministic jitter so several records on one anchor do not stack.
@@ -288,6 +298,13 @@ async function main() {
       near: a.name,
     })
     curatedCount++
+  }
+
+  // Curated places can themselves be anchors — Hall 13's mess is not in OSM,
+  // so without this its campusmess menus would have nowhere to land.
+  for (const p of byId.values()) {
+    const k = norm(p.name)
+    if (!anchors.has(k) || CATEGORIES[p.cat]?.pin) anchors.set(k, p)
   }
 
   /* ── live sources (data/live, written by fetch-web.mjs) ──────────────── */
