@@ -1,6 +1,16 @@
 # Cloudflare Pages headers.
 
-# Hashed asset filenames — safe to cache forever.
+# Hashed asset filenames — safe to cache forever. The explicit Content-Type is
+# belt and braces: a stylesheet served as text/html is refused outright under
+# nosniff, and that failure is invisible to curl.
+/assets/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
