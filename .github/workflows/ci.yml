@@ -1,0 +1,66 @@
+name: ci
+
+# Cloudflare Pages does the deploying (it builds from the Git integration).
+# This job exists to catch a broken build before Pages publishes it, and to
+# gate pull requests — including the automated data-refresh PRs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Validates the MapLibre style, the search index and the routing graph.
+      # An invalid style renders as a page that silently never loads, so this
+      # is the check that matters most before a deploy.
+      - name: Smoke test
+        run: npm run build:data && npm run smoke
+
+      - name: Build
+        run: npm run build
+
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+        with:
+          chrome-version: stable
+
+      # The only check that catches "the page loads but the map never appears".
+      - name: Verify in a real browser
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          npx vite preview --port 5180 &
+          npx wait-on -t 30000 http://localhost:5180/
+          npm run verify
+
+      - name: Check the payload actually has data in it
+        run: |
+          node -e '
+            const c = require("./dist/data/campus.json");
+            const fail = (m) => { console.error("FAIL: " + m); process.exit(1) };
+            if (c.pois.length < 200) fail(`only ${c.pois.length} POIs`);
+            if (!c.meta.counts.lecture) fail("no lecture halls");
+            console.log(`ok: ${c.pois.length} pois, ${c.faculty?.items.length ?? 0} faculty, ${c.mess?.items.length ?? 0} menus`);
+          '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7

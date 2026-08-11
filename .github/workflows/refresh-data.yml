@@ -1,0 +1,76 @@
+name: refresh data
+
+# Re-pulls OpenStreetMap, the IITK faculty directory and campusmess, then opens
+# a PR if anything changed. A PR rather than a direct push, so a source going
+# weird (markup change, empty response) never silently lands on the live site.
+
+on:
+  schedule:
+    - cron: '17 20 * * 0' # Sundays 20:17 UTC — 01:47 IST Monday, quiet hours
+  workflow_dispatch:
+    inputs:
+      osm:
+        description: 'Also refetch OpenStreetMap (slow, hits a free API)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Refetch OpenStreetMap
+        if: inputs.osm
+        run: npm run fetch -- --force
+
+      - name: Refetch faculty + mess
+        run: node scripts/fetch-web.mjs
+
+      - name: Rebuild derived data
+        run: npm run build:data
+
+      # A source returning an empty list would otherwise wipe the site's data.
+      - name: Sanity-check the result
+        run: |
+          node -e '
+            const c = require("./public/data/campus.json");
+            const fail = (m) => { console.error("FAIL: " + m); process.exit(1) };
+            if (c.pois.length < 200) fail(`only ${c.pois.length} POIs`);
+            if ((c.faculty?.items.length ?? 0) < 200) fail(`only ${c.faculty?.items.length ?? 0} faculty`);
+            if ((c.mess?.items.length ?? 0) < 100) fail(`only ${c.mess?.items.length ?? 0} mess menus`);
+            console.log(`ok: ${c.pois.length} pois, ${c.faculty.items.length} faculty, ${c.mess.items.length} menus`);
+          '
+
+      - name: Smoke test the refreshed data
+        run: npm run smoke
+
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/refresh-data
+          title: 'chore: refresh campus data'
+          commit-message: 'chore: refresh campus data'
+          body: |
+            Automated weekly pull of the upstream sources.
+
+            - OpenStreetMap (`data/raw/`) — only when run with the `osm` input
+            - IITK faculty directory (`data/live/faculty.json`)
+            - campusmess.in (`data/live/mess.json`)
+
+            Counts passed the sanity floor. Skim the diff for anything odd
+            (a source changing its markup usually shows up as a mass deletion)
+            before merging.
+          # public/data is generated and gitignored — only the inputs are committed.
+          add-paths: data/
+          delete-branch: true
