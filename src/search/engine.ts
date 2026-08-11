@@ -176,9 +176,9 @@ export class SearchIndex {
         id: `fac:${f.url}`,
         title: f.name,
         sub: f.title || f.dept,
-        hay: lower([f.name, f.title, f.dept, f.research, f.office, f.email, 'professor prof faculty']
-          .filter(Boolean).join(' ')),
-        keys: [...words(f.name), lower(surname), ...words(f.dept)],
+        hay: lower([f.name, f.title, ...(f.depts ?? [f.dept]), f.research, f.office, f.email,
+                    'professor prof faculty'].filter(Boolean).join(' ')),
+        keys: [...words(f.name), lower(surname), ...(f.depts ?? [f.dept]).flatMap(words)],
         person: f,
         boost: 4,
       })

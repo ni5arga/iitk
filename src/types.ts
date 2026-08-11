@@ -33,7 +33,10 @@ export interface Category {
 export interface Faculty {
   name: string
   title: string
+  /** Primary department — the first listing this person appeared under. */
   dept: string
+  /** Every department they are listed under; 59 hold joint appointments. */
+  depts: string[]
   url: string
   email?: string
   phone?: string
@@ -77,7 +80,8 @@ export interface Campus {
     _source: string
     _fetched: string
     _note: string
-    _capped_departments: string[]
+    /** Departments whose listing count did not match after paging. Empty is good. */
+    _incomplete_departments: { dept: string; got: number; expected: number }[]
     _located?: number
     items: Faculty[]
   }
