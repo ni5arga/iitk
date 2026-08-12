@@ -3,9 +3,10 @@
 //
 //   node scripts/build-data.mjs
 //
-// Curated POIs never carry raw coordinates. They carry an `anchor` — the name of
-// a real OSM feature — and get resolved to that feature's position here. Keeps
-// hand-written data honest: if the anchor does not exist, the build says so.
+// Curated POIs carry either surveyed lat/lon or an `anchor` — the name of
+// a real OSM feature to sit beside, resolved to its position here. Keeps
+// hand-written data honest: unresolved anchors, and entries OSM has since
+// gained, are both reported as warnings.
 
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
@@ -50,6 +51,9 @@ export const CATEGORIES = {
 function classify(t) {
   const name = t.name || ''
   const { amenity: a, shop: s, leisure: l, office: o, healthcare: h, tourism: tr, building: b } = t
+
+  // "Lecture Hall Complex Office Staff" is an indoor office, not a lecture hall.
+  if (/\b(office|staff|store|pantry|toilet)\b/i.test(name) && t.indoor) return 'admin'
 
   if (/^Lecture Hall\b/i.test(name) || /Lecture Hall Complex/i.test(name) ||
       /^Tutorial Block/i.test(name) || a === 'lecture_hall') return 'lecture'
@@ -274,6 +278,12 @@ async function main() {
   // naming an existing OSM feature to sit beside.
   let curatedCount = 0
   for (const p of curated.places?.items ?? []) {
+    // Once OSM gains a feature we hand-added, the curated row is dead weight
+    // and shows up as a doubled pin. Drop it and say so, loudly.
+    if (anchors.has(norm(p.name))) {
+      warn(`curated "${p.name}" now exists in OSM — delete it from places.json`)
+      continue
+    }
     if (p.lat != null && p.lon != null) {
       if (!inCampus(p.lon, p.lat)) { warn(`curated "${p.id}" is outside the campus boundary`); continue }
       const { anchor, ...rest } = p
@@ -377,6 +387,18 @@ async function main() {
       if (anchors.has(norm(c))) { h.at = anchors.get(norm(c)).name; messLocated++; break }
     }
     if (!h.at) warn(`mess hall "${h.name}" has no matching OSM feature`)
+  }
+
+  // The same facility is often mapped twice — once as a node, once as the room
+  // or building around it. Same name at the same spot is one place.
+  const atPoint = new Map()
+  for (const p of [...byId.values()]) {
+    const k = `${norm(p.name)}@${p.lat.toFixed(5)},${p.lon.toFixed(5)}`
+    const hit = atPoint.get(k)
+    if (!hit) { atPoint.set(k, p); continue }
+    // Keep whichever record carries more detail.
+    const score = (x) => Object.keys(x).length + (x.unnamed ? -5 : 0)
+    if (score(p) > score(hit)) { byId.delete(hit.id); atPoint.set(k, p) } else { byId.delete(p.id) }
   }
 
   const poiList = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))

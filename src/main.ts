@@ -6,7 +6,7 @@ import { Router, humanEta, humanDistance } from './route/router'
 import { SearchIndex, type Hit } from './search/engine'
 import { initPalette, openPalette } from './ui/palette'
 import { initPanel, showAbout, showMess, showPerson, showPoi, hidePanel } from './ui/panel'
-import { cycle as cycleTheme, current as themeChoice, onThemeChange, resolved } from './ui/theme'
+import { toggle as toggleTheme, onThemeChange, resolved } from './ui/theme'
 
 const boot = document.getElementById('boot')!
 const base = import.meta.env.BASE_URL
@@ -325,7 +325,34 @@ async function start() {
     )
   }
 
+  // Desktop: right-click. Phones have no right-click and iOS Safari does not
+  // reliably fire contextmenu on a canvas, so long-press is wired by hand.
   map.on('contextmenu', (e) => { reportAt(e.lngLat.lat, e.lngLat.lng) })
+
+  let holdTimer: ReturnType<typeof setTimeout> | undefined
+  let holdFrom: { x: number; y: number } | null = null
+  const cancelHold = () => { clearTimeout(holdTimer); holdFrom = null }
+
+  map.on('touchstart', (e) => {
+    // One finger only — two is a pinch, and panning must not trigger it.
+    if (e.points.length !== 1) { cancelHold(); return }
+    holdFrom = { x: e.point.x, y: e.point.y }
+    const { lat, lng } = e.lngLat
+    holdTimer = setTimeout(() => {
+      if (!holdFrom) return
+      cancelHold()
+      if (navigator.vibrate) navigator.vibrate(12)
+      reportAt(lat, lng)
+    }, 550)
+  })
+  map.on('touchmove', (e) => {
+    if (!holdFrom) return
+    // A few pixels of drift is a held finger; more than that is a pan.
+    if (Math.hypot(e.point.x - holdFrom.x, e.point.y - holdFrom.y) > 10) cancelHold()
+  })
+  map.on('touchend', cancelHold)
+  map.on('touchcancel', cancelHold)
+  map.on('movestart', cancelHold)
 
   /* ── selection ────────────────────────────────────────────────────────── */
 
@@ -425,14 +452,13 @@ async function start() {
   /* ── theme ────────────────────────────────────────────────────────────── */
 
   const themeBtn = document.getElementById('theme-btn')!
-  const GLYPH = { auto: '◐', light: '○', dark: '●' }
   const paintThemeBtn = () => {
-    const c = themeChoice()
-    themeBtn.textContent = GLYPH[c]
-    themeBtn.title = `Theme: ${c}`
+    const dark = resolved() === 'dark'
+    themeBtn.textContent = dark ? '☾' : '☀'
+    themeBtn.title = dark ? 'Switch to light' : 'Switch to dark'
   }
   paintThemeBtn()
-  themeBtn.addEventListener('click', () => { cycleTheme(); paintThemeBtn() })
+  themeBtn.addEventListener('click', () => { toggleTheme(); paintThemeBtn() })
 
   onThemeChange((t) => {
     shadeCache.clear()
