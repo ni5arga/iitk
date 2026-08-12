@@ -135,9 +135,10 @@ hours, step-free access — belongs in **OpenStreetMap** rather than here. Map i
 once there and this picks it up on the next `npm run fetch`, along with every
 other OSM consumer. For contributing to OSM, please refer to: [OpenStreetMap Web - IIT Kanpur](https://www.openstreetmap.org/#map=15/26.51317/80.22539).
 
-For anything OSM will not take, add it to `data/curated/places.json` with an
-`anchor` naming a real OSM feature — never raw coordinates. The build resolves
-the position and warns if the anchor stops matching.
+For anything OSM will not take, add it to `data/curated/places.json` — either
+with surveyed `lat`/`lon`, or with an `anchor` naming a real OSM feature to sit
+beside, in which case the build resolves the position and warns if that anchor
+stops matching. Coordinates must come from an actual survey; nothing invented.
 
 For code changes/features/suggustions, feel free to make an issue or a pull request in this repo - if I somehow miss it, please do not
 hesitate to tag me in the issue/PR thread. 
