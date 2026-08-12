@@ -144,6 +144,9 @@ export class SearchIndex {
     this.campus = campus
 
     for (const p of campus.pois) {
+      // 23 identical "Street light" rows would drown the results. The layer
+      // entry below still makes them reachable by name.
+      if (p.cat === 'light') continue
       const alias = ALIASES[p.cat] ?? []
       // "Lecture Hall 20" should be reachable as L20, LH20, l 20.
       const short = /^Lecture Hall (\d+)$/.exec(p.name)
@@ -329,6 +332,7 @@ const ALIASES: Record<string, string[]> = {
   transport: ['bus', 'parking', 'fuel', 'petrol', 'auto', 'taxi', 'charging'],
   admin: ['office', 'admin', 'security', 'police', 'library', 'post', 'help', 'lost', 'found'],
   green: ['park', 'garden', 'green', 'lawn'],
+  light: ['light', 'lights', 'lamp', 'lamps', 'street light', 'streetlight', 'lit', 'dark', 'night'],
 }
 
 const ACTIONS = [
