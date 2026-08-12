@@ -166,7 +166,6 @@ kbd {
 }
 #open-search svg { flex: none; color: var(--accent); }
 #open-search .ph { flex: 1; text-align: left; }
-#open-search .ph b { color: var(--fg); font-weight: 600; }
 #open-search kbd {
   flex: none;
   padding: 3px 6px;
