@@ -54,6 +54,20 @@
         "C3iHub IIT Kanpur"
       ],
       "desc": "Second floor of Technopark. Not yet in OpenStreetMap — coordinates surveyed on campus."
+    },
+    {
+      "id": "c3i-centre",
+      "name": "C3i Centre",
+      "cat": "academic",
+      "lat": 26.5147,
+      "lon": 80.23044,
+      "aliases": [
+        "C3I Centre",
+        "C3i Center",
+        "Cyber Security Centre"
+      ],
+      "near": "Interdisciplinary Centre for Cyber Security and Cyber Defence of Critical Infrastructures",
+      "desc": "The name everyone uses for the Interdisciplinary Centre for Cyber Security and Cyber Defence of Critical Infrastructures, in the same building. Coordinates surveyed on campus."
     }
   ]
 }
