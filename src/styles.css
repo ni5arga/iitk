@@ -3,8 +3,11 @@
 
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
-/* Dark is the base. Light overrides only the tokens. */
+/* Dark is the product default, not the system's — `prefers-color-scheme` is
+   deliberately not consulted. Light is opt-in via [data-theme="light"], which
+   theme.ts sets from localStorage before first paint. */
 :root {
+  color-scheme: dark;
   --bg: #0b0d10;
   --bg-1: #101318;
   --bg-2: #171b22;
@@ -26,34 +29,8 @@
   --r: 5px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) { color-scheme: light; }
-}
-:root[data-theme="light"] { color-scheme: light; }
-
-/* One block, applied by either the media query or the explicit attribute. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    /* Warm off-white rather than pure white: less glare, and it keeps the
-       map's own white roads readable as figure against ground. Text is a
-       soft charcoal — pure black on white is the harshest pairing there is. */
-    --bg: #e9ebef;
-    --bg-1: #fbfbfc;
-    --bg-2: #f1f3f6;
-    --line: #e3e6eb;
-    --line-2: #ccd1d9;
-    --fg: #2b313a;
-    --fg-2: #626b78;
-    --fg-3: #949ba7;
-    --accent: #2a8a4d;
-    --danger: #b8443a;
-    --route: #2b6cb8;
-    --scrim: rgba(88, 98, 112, .26);
-    --lift: 0 14px 36px rgba(40, 50, 70, .13);
-    --halo: #fbfbfc;
-  }
-}
 :root[data-theme="light"] {
+  color-scheme: light;
   /* Warm off-white rather than pure white: less glare, and it keeps the
      map's own white roads readable as figure against ground. Text is a
      soft charcoal — pure black on white is the harshest pairing there is. */
@@ -116,9 +93,6 @@ kbd {
 .maplibregl-ctrl-group button + button { border-top: 1px solid var(--line) !important; }
 .maplibregl-ctrl-group button span { opacity: .55; }
 :root:not([data-theme="light"]) .maplibregl-ctrl-group button span { filter: invert(1); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .maplibregl-ctrl-group button span { filter: invert(1); }
-}
 .maplibregl-canvas:focus { outline: none; }
 
 /* ── top bar ─────────────────────────────────────────────────────────── */
