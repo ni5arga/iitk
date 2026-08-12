@@ -51,6 +51,13 @@ export const CATEGORIES = {
 function classify(t) {
   const name = t.name || ''
   const { amenity: a, shop: s, leisure: l, office: o, healthcare: h, tourism: tr, building: b } = t
+  const lu = t.landuse
+
+  // Every hall of residence is mapped as a named plot rather than a building,
+  // so without this the whole hostel side of campus is invisible.
+  if (lu === 'residential' && (t.residential === 'hostel' || /^Hall of Residence/i.test(name))) {
+    return 'hostel'
+  }
 
   // "Lecture Hall Complex Office Staff" is an indoor office, not a lecture hall.
   if (/\b(office|staff|store|pantry|toilet)\b/i.test(name) && t.indoor) return 'admin'
@@ -99,6 +106,11 @@ function classify(t) {
     return 'academic'
   }
   if (o) return 'admin'
+
+  if (lu === 'retail' || lu === 'commercial') return 'shop'
+  if (lu === 'recreation_ground') return 'sports'
+  if (lu === 'orchard' || lu === 'plant_nursery' || lu === 'forest' || lu === 'meadow') return 'green'
+  if (lu === 'residential') return 'hostel'
   return null
 }
 
@@ -174,7 +186,9 @@ async function main() {
 
   /* ── POIs from OSM ────────────────────────────────────────────────────── */
   const byId = new Map()
-  const sources = [...pois.elements, ...buildings.elements]
+  // Named land polygons carry the halls of residence, the markets and the
+  // grounds — none of which exist as buildings or amenity nodes.
+  const sources = [...pois.elements, ...buildings.elements, ...land.elements]
 
   for (const el of sources) {
     const t = el.tags || {}
@@ -193,17 +207,34 @@ async function main() {
     const id = `${el.type[0]}${el.id}`
     if (byId.has(id)) continue
 
+    // OSM spells them out; nobody on campus says "Hall of Residence 4".
+    // Prefer the mapper's own alt_name, else shorten, and keep the long form
+    // searchable.
+    let display = t.name
+    const aliases = []
+    const long = /^Hall of Residence(?: for (Girls|Boys))? (\d+)$/i.exec(t.name)
+    if (t.alt_name && /^(Hall|GH)\s*\d/i.test(t.alt_name)) display = t.alt_name
+    else if (long) {
+      const n = long[2]
+      display = long[1] ? `Girls Hostel ${n}` : `Hall ${n}`
+      // The girls' halls are numbered in their own series in OSM, but everyone
+      // on campus still calls them "Hall 6" and "GH6".
+      if (long[1]) aliases.push(`Hall ${n}`, `GH${n}`, `GH ${n}`)
+    }
+
     // The same real place is often a node (the amenity) inside a way (the
     // building). Prefer the amenity node, drop the duplicate footprint.
     byId.set(id, {
       id,
-      name: t.name,
+      name: display,
       cat,
       lon: +lon.toFixed(6),
       lat: +lat.toFixed(6),
       src: 'osm',
       osm: `${el.type}/${el.id}`,
-      ...(t['name:en'] && t['name:en'] !== t.name ? { alt: t['name:en'] } : {}),
+      ...(display !== t.name ? { alt: t.name }
+          : t['name:en'] && t['name:en'] !== t.name ? { alt: t['name:en'] } : {}),
+      ...(aliases.length ? { aliases } : {}),
       ...(t.opening_hours ? { hours: t.opening_hours } : {}),
       ...(t.wheelchair ? { wheelchair: t.wheelchair } : {}),
       ...(t.phone || t['contact:phone'] ? { phone: t.phone || t['contact:phone'] } : {}),
@@ -382,6 +413,9 @@ async function main() {
     // OSM is inconsistent here: mostly "Hall 5 Mess", but also "Mess Hall 14".
     const cand = [`${h.name} Mess`, `Mess ${h.name}`, h.name,
                   h.name.replace(/^GH (\d+)$/, 'Girls Hostel $1'),
+                  // Some halls are numbered in the girls' series in OSM but
+                  // plain "Hall N" by campusmess — Hall 6 is Girls Hostel 6.
+                  h.name.replace(/^Hall (\d+)$/, 'Girls Hostel $1'),
                   h.name.replace(/^Hall (\d+)$/, 'Hall $1 Block A')]
     for (const c of cand) {
       if (anchors.has(norm(c))) { h.at = anchors.get(norm(c)).name; messLocated++; break }

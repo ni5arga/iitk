@@ -9,6 +9,8 @@ export interface Poi {
   kind?: string
   unnamed?: true
   alt?: string
+  /** Extra names people actually use, e.g. "Hall 6" for Girls Hostel 6. */
+  aliases?: string[]
   hours?: string
   wheelchair?: string
   phone?: string
