@@ -332,4 +332,5 @@ const ACTIONS = [
   { id: 'layers-none', title: 'Hide every layer', sub: 'Clear the map', words: 'none clear hide reset layers' },
   { id: 'clear-route', title: 'Clear route', sub: 'Remove the drawn path', words: 'route clear cancel remove path' },
   { id: 'about', title: 'About & data sources', sub: 'Where every number comes from', words: 'about data source credit osm attribution help' },
+  { id: 'report', title: 'Report a missing place', sub: 'Drop a pin and open an issue', words: 'missing add report wrong hall lecture hostel contribute fix pin' },
 ]

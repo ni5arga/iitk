@@ -771,3 +771,30 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ── report-a-place picker ───────────────────────────────────────────── */
+
+#pick-bar {
+  position: fixed;
+  top: calc(var(--pad) + 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 13px;
+  background: var(--bg-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--r);
+  box-shadow: var(--lift);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+#pick-bar[hidden] { display: none; }
+#pick-bar .x { color: var(--fg-3); font-size: 11.5px; }
+#pick-bar .x:hover { color: var(--fg); }
+
+@media (max-width: 760px), (pointer: coarse) and (max-width: 900px) {
+  #pick-bar { left: var(--pad); right: var(--pad); transform: none; justify-content: space-between; }
+}

@@ -270,6 +270,63 @@ async function start() {
     )
   })
 
+  /* ── report a missing place ───────────────────────────────────────────── */
+
+  // Half the campus is in OSM as unnamed footprints — the geometry is there,
+  // nobody has typed the name on it. Someone standing next to Hall 4 can fix
+  // that in seconds, so make the coordinates one tap away.
+  const REPO = 'https://github.com/ni5arga/iitk'
+  let picking = false
+
+  const pickBar = document.createElement('div')
+  pickBar.id = 'pick-bar'
+  pickBar.hidden = true
+  document.body.append(pickBar)
+
+  function startPicking() {
+    picking = true
+    map.getCanvas().style.cursor = 'crosshair'
+    pickBar.hidden = false
+    pickBar.innerHTML = `<span>Tap the map where the place is</span>
+      <button class="x" data-cancel>cancel</button>`
+  }
+
+  function stopPicking() {
+    picking = false
+    map.getCanvas().style.cursor = ''
+    pickBar.hidden = true
+  }
+
+  pickBar.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).dataset.cancel !== undefined) stopPicking()
+  })
+
+  function reportAt(lat: number, lon: number) {
+    stopPicking()
+    const ll = `${lat.toFixed(7)}, ${lon.toFixed(7)}`
+    const title = `Missing place at ${lat.toFixed(5)}, ${lon.toFixed(5)}`
+    const body = [
+      `**Coordinates:** ${ll}`,
+      '',
+      '**Name:** <!-- e.g. Hall 4, Lecture Hall 9, GH1 -->',
+      '**What is it:** <!-- hostel / mess / canteen / lecture hall / water cooler / … -->',
+      '',
+      '---',
+      'Even better: add it straight to OpenStreetMap and it lands here on the next',
+      `build, plus every other map app — https://www.openstreetmap.org/edit#map=19/${lat.toFixed(5)}/${lon.toFixed(5)}`,
+      '',
+      'Please only report a spot you have actually stood at or can point to on the',
+      'satellite layer. Do not copy coordinates out of Google Maps — this dataset is',
+      'ODbL and Google-derived data cannot be redistributed or pushed upstream.',
+    ].join('\n')
+    window.open(
+      `${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`,
+      '_blank', 'noopener',
+    )
+  }
+
+  map.on('contextmenu', (e) => { reportAt(e.lngLat.lat, e.lngLat.lng) })
+
   /* ── selection ────────────────────────────────────────────────────────── */
 
   /** Nudge the map so the focused point is not hidden by the panel or sheet. */
@@ -289,7 +346,14 @@ async function start() {
     showPoi(p, menusAt.get(p.name))
   }
 
+  map.on('click', (e) => {
+    if (!picking) return
+    e.preventDefault()
+    reportAt(e.lngLat.lat, e.lngLat.lng)
+  })
+
   map.on('click', 'poi-dot', (e) => {
+    if (picking) return
     const id = e.features?.[0]?.properties?.id as string | undefined
     const p = id ? byId.get(id) : undefined
     if (p) focusPoi(p)
@@ -311,6 +375,7 @@ async function start() {
       if (id === 'layers-none') { active.clear(); refreshPois() }
       if (id === 'clear-route') clearRoute()
       if (id === 'about') showAbout(campus)
+      if (id === 'report') startPicking()
       if (id === 'locate') {
         navigator.geolocation?.getCurrentPosition((pos) =>
           map.easeTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 17 }))
