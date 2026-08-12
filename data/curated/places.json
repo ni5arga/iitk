@@ -36,6 +36,102 @@
       "lat": 26.5101082,
       "lon": 80.2267368,
       "desc": "Not yet mapped in OpenStreetMap — coordinates surveyed on campus."
+    },
+    {
+      "id": "hall-1",
+      "name": "Hall 1",
+      "cat": "hostel",
+      "lat": 26.5095737,
+      "lon": 80.2317479,
+      "desc": "Oldest hall, on the avenue past the Sports Complex — coordinates added manually after verifying against OSM's \"Hall of Residence 1\" plot (7 dormitory blocks sit inside it)."
+    },
+    {
+      "id": "hall-4",
+      "name": "Hall 4",
+      "cat": "hostel",
+      "lat": 26.507111,
+      "lon": 80.231776,
+      "desc": "PG and co-ed hall — coordinates added manually after verifying the Hall 4 website's map against OSM's \"Hall of Residence 4\" plot, which both agree on."
+    },
+    {
+      "id": "hall-6",
+      "name": "Hall 6",
+      "cat": "hostel",
+      "lat": 26.505356,
+      "lon": 80.2343988,
+      "desc": "Girls' PG hostel, renamed Girls Hostel 2 (GH2) — coordinates added manually after verifying OSM's \"Hall of Residence for Girls 6\" plot."
+    },
+    {
+      "id": "hall-7",
+      "name": "Hall 7",
+      "cat": "hostel",
+      "lat": 26.5070563,
+      "lon": 80.2280717,
+      "desc": "PG hall beside Halls 4 and 5 — coordinates added manually after verifying OSM's \"Hall of Residence 7\" plot."
+    },
+    {
+      "id": "hall-14",
+      "name": "Hall 14",
+      "cat": "hostel",
+      "lat": 26.5123265,
+      "lon": 80.2250315,
+      "desc": "Newest hall (2023), past Hall 13 — coordinates added manually after verifying OSM's \"Hall of Residence 14\" plot."
+    },
+    {
+      "id": "girls-hostel-1",
+      "name": "Girls Hostel 1",
+      "cat": "hostel",
+      "lat": 26.5070262,
+      "lon": 80.2333933,
+      "desc": "GH1 — oldest girls' hostel (est. 1971), near the Visitor Hostel — coordinates added manually after verifying OSM's \"Hall of Residence for Girls 1\" plot (its buildings are not yet mapped there)."
+    },
+    {
+      "id": "lecture-hall-8",
+      "name": "Lecture Hall 8",
+      "cat": "lecture",
+      "lat": 26.5111724,
+      "lon": 80.2332954,
+      "desc": "L8, in the lecture hall complex — OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
+    },
+    {
+      "id": "lecture-hall-9",
+      "name": "Lecture Hall 9",
+      "cat": "lecture",
+      "lat": 26.5110572,
+      "lon": 80.2334338,
+      "desc": "L9, in the lecture hall complex — OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
+    },
+    {
+      "id": "lecture-hall-10",
+      "name": "Lecture Hall 10",
+      "cat": "lecture",
+      "lat": 26.511273,
+      "lon": 80.2334148,
+      "desc": "L10, in the lecture hall complex — OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
+    },
+    {
+      "id": "lecture-hall-11",
+      "name": "Lecture Hall 11",
+      "cat": "lecture",
+      "lat": 26.5111631,
+      "lon": 80.2335413,
+      "desc": "L11, in the lecture hall complex — OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
+    },
+    {
+      "id": "lecture-hall-12",
+      "name": "Lecture Hall 12",
+      "cat": "lecture",
+      "lat": 26.5111724,
+      "lon": 80.2332954,
+      "desc": "L12 — same room as L8, one floor up; OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
+    },
+    {
+      "id": "lecture-hall-13",
+      "name": "Lecture Hall 13",
+      "cat": "lecture",
+      "lat": 26.5110572,
+      "lon": 80.2334338,
+      "desc": "L13 — same room as L9, one floor up; OSM carries it only as an indoor room, so the fetch misses it; coordinate added manually after verifying the OSM room outline."
     }
   ]
 }
