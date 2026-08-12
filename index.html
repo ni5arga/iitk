@@ -8,11 +8,17 @@
 <meta name="description" content="A map of IIT Kanpur with the things students actually look for — lecture halls, messes, water, cycle stands, ATMs — and one fast search over all of it.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0d10'/><path d='M8 22 L16 9 L24 22' stroke='%2361d47c' stroke-width='2.5' fill='none' stroke-linejoin='round'/><circle cx='16' cy='23' r='2' fill='%23ffb454'/></svg>">
 <script>
-  // Set the theme before first paint so there is no flash of the wrong one.
+  // Dark unless this browser has been told otherwise. Runs before first paint
+  // so a light-mode visitor never sees a dark flash.
   try {
     var t = localStorage.getItem('campusmap.theme')
-    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
-  } catch (e) {}
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark')
+    if (t === 'light') {
+      document.querySelector('meta[name="theme-color"]').content = '#e9ebef'
+    }
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark')
+  }
 </script>
 </head>
 <body>
