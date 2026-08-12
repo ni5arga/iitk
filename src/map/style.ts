@@ -37,27 +37,32 @@ const PALETTE = {
   // half-step darker, and roads the only near-white — so the built area reads
   // without any large field of pure white to stare into.
   light: {
-    bg: '#dfe3e8',
-    campus: '#f4f2ee',
-    green: '#e2ebdc',
-    water: '#cfe0ec',
-    building: '#e6e3dd',
-    buildingEdge: '#d3cfc7',
-    named: '#ddd8cf',
-    road: '#fdfdfc',
-    roadCase: '#dcd8d1',
-    path: '#fbfaf8',
-    steps: '#b6b1a8',
-    wall: '#e0dcd4',
-    boundary: '#c2beb6',
-    label: '#4a5058',
-    labelHalo: '#f4f2ee',
-    dotStroke: '#fdfdfc',
-    routeHalo: '#fdfdfc',
-    route: '#2b6cb8',
-    focus: '#2a8a4d',
-    glow: '#e0a11f',
-    glowCore: '#8a6410',
+    // Built as a lightness ladder so the map reads as figure and ground:
+    // roads are the lightest thing, campus ground sits a step below, buildings
+    // a clear step below that, and everything outside the wall darker still.
+    // The previous palette put all three within ~5% of each other and the
+    // whole map dissolved into one pale wash.
+    bg: '#d7dade',        // outside the wall
+    campus: '#eeece7',    // campus ground
+    green: '#d7e8c9',
+    water: '#b7d5ea',
+    building: '#dedbd3',  // clearly darker than the ground
+    buildingEdge: '#c4bfb3',
+    named: '#d5d0c5',
+    road: '#ffffff',      // the lightest thing on the map
+    roadCase: '#c8c3b7',
+    path: '#ffffff',
+    steps: '#a9a294',
+    wall: '#cdc8bd',
+    boundary: '#a8a294',
+    label: '#2f343b',     // near-black: the old grey vanished on pale ground
+    labelHalo: '#ffffff',
+    dotStroke: '#ffffff',
+    routeHalo: '#ffffff',
+    route: '#1a5fb4',
+    focus: '#1d7a41',
+    glow: '#d9930d',
+    glowCore: '#7a5608',
   },
 } as const
 
@@ -168,7 +173,7 @@ export function buildStyle(
       {
         id: 'building-cat', type: 'fill', source: 'buildings',
         filter: ['all', ['!=', ['get', 'cat'], ''], ['in', ['get', 'cat'], ['literal', []]]],
-        paint: { 'fill-color': catColour(campus), 'fill-opacity': 0.16 },
+        paint: { 'fill-color': catColour(campus), 'fill-opacity': theme === 'dark' ? 0.16 : 0.28 },
       },
 
       {

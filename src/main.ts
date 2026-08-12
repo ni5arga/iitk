@@ -37,19 +37,41 @@ async function start() {
     if (rows.length) menusAt.set(hall.at, rows)
   }
 
-  // The category palette is tuned for a dark ground; several hues wash out on
-  // white. Darken them for the light theme rather than keeping two hand-written
-  // palettes in sync.
+  // The category palette is tuned for a dark ground and washes out on a pale
+  // one. Darken in HSL, holding hue and saturation and moving only lightness —
+  // scaling the RGB channels instead (the previous approach) drains the colour
+  // and turns every marker into the same sludge brown.
   const shadeCache = new Map<string, string>()
   function catColour(cat: string): string {
     const base = campus.categories[cat]?.color ?? '#8b949e'
     if (resolved() === 'dark') return base
     const hit = shadeCache.get(base)
     if (hit) return hit
+
     const n = parseInt(base.slice(1), 16)
-    const mix = (c: number) => Math.round(c * 0.62)
-    const out = '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-      .map((c) => mix(c).toString(16).padStart(2, '0')).join('')
+    const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, bl = (n & 255) / 255
+    const max = Math.max(r, g, bl), min = Math.min(r, g, bl)
+    const l = (max + min) / 2
+    const d = max - min
+    let h = 0
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1))
+    if (d !== 0) {
+      h = max === r ? ((g - bl) / d) % 6 : max === g ? (bl - r) / d + 2 : (r - g) / d + 4
+      h *= 60
+      if (h < 0) h += 360
+    }
+    // Target ~38% lightness: dark enough to read on near-white, light enough
+    // to stay recognisably the same hue as the dark theme.
+    const L = Math.min(l, 0.38)
+    const S = Math.min(1, sat * 1.05)
+    const c = (1 - Math.abs(2 * L - 1)) * S
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
+    const m = L - c / 2
+    const seg: [number, number, number] =
+      h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+      : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]
+    const out = '#' + seg
+      .map((v) => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('')
     shadeCache.set(base, out)
     return out
   }

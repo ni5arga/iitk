@@ -117,7 +117,7 @@ kbd {
   font-weight: 600;
   letter-spacing: -.015em;
   color: var(--fg);
-  text-shadow: 0 0 4px var(--halo), 0 0 10px var(--halo);
+  text-shadow: 0 0 3px var(--halo), 0 0 7px var(--halo), 0 0 12px var(--halo);
 }
 #brand-btn span { color: var(--fg-3); font-weight: 500; }
 #brand-btn:hover span { color: var(--accent); }
@@ -254,14 +254,16 @@ kbd {
   color: var(--fg-3);
   white-space: nowrap;
   user-select: none;
-  text-shadow: 0 0 4px var(--halo), 0 0 8px var(--halo);
+  /* Three stacked halos, not one. These sit directly on the map and a single
+     soft shadow leaves map labels bleeding through the text. */
+  text-shadow: 0 0 3px var(--halo), 0 0 6px var(--halo), 0 0 11px var(--halo);
 }
 .chip .dot {
   width: 7px; height: 7px;
   border-radius: 50%;
   background: currentColor;
   opacity: .3;
-  box-shadow: 0 0 0 2px var(--halo);
+  box-shadow: 0 0 0 2px var(--halo), 0 0 4px 2px var(--halo);
 }
 .chip[aria-pressed="true"] { color: var(--fg); }
 .chip[aria-pressed="true"] .dot { opacity: 1; }
