@@ -147,7 +147,12 @@ export class SearchIndex {
       const alias = ALIASES[p.cat] ?? []
       // "Lecture Hall 20" should be reachable as L20, LH20, l 20.
       const short = /^Lecture Hall (\d+)$/.exec(p.name)
-      const keys = [...words(p.name), ...alias]
+      // Whole-phrase keys as well as word keys: "hall 6" has to match Girls
+      // Hostel 6 exactly, or Lecture Hall 6 wins it on a contiguous title match.
+      const keys = [
+        lower(p.name), ...words(p.name), ...alias,
+        ...(p.aliases ?? []).flatMap((x) => [lower(x), ...words(x)]),
+      ]
       if (short) keys.push(`l${short[1]}`, `lh${short[1]}`, short[1]!)
       const hallNo = /^Hall ?(\d+)/.exec(p.name)
       if (hallNo) keys.push(`h${hallNo[1]}`)
@@ -158,8 +163,8 @@ export class SearchIndex {
         title: p.name,
         sub: [campus.categories[p.cat]?.label, p.near ? `near ${p.near}` : '', p.operator ?? '']
           .filter(Boolean).join(' · '),
-        hay: lower([p.name, p.alt, p.cat, campus.categories[p.cat]?.label, p.kind, p.operator,
-                    p.cuisine, p.desc, p.near, ...alias].filter(Boolean).join(' ')),
+        hay: lower([p.name, p.alt, ...(p.aliases ?? []), p.cat, campus.categories[p.cat]?.label,
+                    p.kind, p.operator, p.cuisine, p.desc, p.near, ...alias].filter(Boolean).join(' ')),
         keys,
         cat: p.cat,
         lat: p.lat, lon: p.lon,

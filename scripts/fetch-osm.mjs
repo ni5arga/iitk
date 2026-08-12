@@ -38,6 +38,8 @@ out geom tags;`,
   nwr["healthcare"];
   nwr["emergency"];
   nwr["man_made"];
+  nwr["indoor"]["name"];
+  nwr["room"]["name"];
 );
 out center tags;`,
 

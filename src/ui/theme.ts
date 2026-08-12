@@ -31,13 +31,20 @@ function apply() {
   for (const fn of listeners) fn(r)
 }
 
-/** auto -> light -> dark -> auto */
-export function cycle(): ThemeChoice {
-  choice = choice === 'auto' ? 'light' : choice === 'light' ? 'dark' : 'auto'
-  if (choice === 'auto') localStorage.removeItem(KEY)
-  else localStorage.setItem(KEY, choice)
+/**
+ * Straight flip between light and dark.
+ *
+ * This used to cycle auto -> light -> dark -> auto, which meant that whenever
+ * `auto` resolved to the theme you were already looking at, one press changed
+ * nothing on screen and you had to press again. Following the system is still
+ * the default until you touch this; after that it is your explicit choice.
+ */
+export function toggle(): Resolved {
+  const next: Resolved = resolved() === 'dark' ? 'light' : 'dark'
+  choice = next
+  localStorage.setItem(KEY, next)
   apply()
-  return choice
+  return next
 }
 
 export function onThemeChange(fn: (t: Resolved) => void) {

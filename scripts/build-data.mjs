@@ -3,9 +3,10 @@
 //
 //   node scripts/build-data.mjs
 //
-// Curated POIs never carry raw coordinates. They carry an `anchor` — the name of
-// a real OSM feature — and get resolved to that feature's position here. Keeps
-// hand-written data honest: if the anchor does not exist, the build says so.
+// Curated POIs carry either surveyed lat/lon or an `anchor` — the name of
+// a real OSM feature to sit beside, resolved to its position here. Keeps
+// hand-written data honest: unresolved anchors, and entries OSM has since
+// gained, are both reported as warnings.
 
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
@@ -50,6 +51,16 @@ export const CATEGORIES = {
 function classify(t) {
   const name = t.name || ''
   const { amenity: a, shop: s, leisure: l, office: o, healthcare: h, tourism: tr, building: b } = t
+  const lu = t.landuse
+
+  // Every hall of residence is mapped as a named plot rather than a building,
+  // so without this the whole hostel side of campus is invisible.
+  if (lu === 'residential' && (t.residential === 'hostel' || /^Hall of Residence/i.test(name))) {
+    return 'hostel'
+  }
+
+  // "Lecture Hall Complex Office Staff" is an indoor office, not a lecture hall.
+  if (/\b(office|staff|store|pantry|toilet)\b/i.test(name) && t.indoor) return 'admin'
 
   if (/^Lecture Hall\b/i.test(name) || /Lecture Hall Complex/i.test(name) ||
       /^Tutorial Block/i.test(name) || a === 'lecture_hall') return 'lecture'
@@ -95,6 +106,11 @@ function classify(t) {
     return 'academic'
   }
   if (o) return 'admin'
+
+  if (lu === 'retail' || lu === 'commercial') return 'shop'
+  if (lu === 'recreation_ground') return 'sports'
+  if (lu === 'orchard' || lu === 'plant_nursery' || lu === 'forest' || lu === 'meadow') return 'green'
+  if (lu === 'residential') return 'hostel'
   return null
 }
 
@@ -170,7 +186,9 @@ async function main() {
 
   /* ── POIs from OSM ────────────────────────────────────────────────────── */
   const byId = new Map()
-  const sources = [...pois.elements, ...buildings.elements]
+  // Named land polygons carry the halls of residence, the markets and the
+  // grounds — none of which exist as buildings or amenity nodes.
+  const sources = [...pois.elements, ...buildings.elements, ...land.elements]
 
   for (const el of sources) {
     const t = el.tags || {}
@@ -189,17 +207,34 @@ async function main() {
     const id = `${el.type[0]}${el.id}`
     if (byId.has(id)) continue
 
+    // OSM spells them out; nobody on campus says "Hall of Residence 4".
+    // Prefer the mapper's own alt_name, else shorten, and keep the long form
+    // searchable.
+    let display = t.name
+    const aliases = []
+    const long = /^Hall of Residence(?: for (Girls|Boys))? (\d+)$/i.exec(t.name)
+    if (t.alt_name && /^(Hall|GH)\s*\d/i.test(t.alt_name)) display = t.alt_name
+    else if (long) {
+      const n = long[2]
+      display = long[1] ? `Girls Hostel ${n}` : `Hall ${n}`
+      // The girls' halls are numbered in their own series in OSM, but everyone
+      // on campus still calls them "Hall 6" and "GH6".
+      if (long[1]) aliases.push(`Hall ${n}`, `GH${n}`, `GH ${n}`)
+    }
+
     // The same real place is often a node (the amenity) inside a way (the
     // building). Prefer the amenity node, drop the duplicate footprint.
     byId.set(id, {
       id,
-      name: t.name,
+      name: display,
       cat,
       lon: +lon.toFixed(6),
       lat: +lat.toFixed(6),
       src: 'osm',
       osm: `${el.type}/${el.id}`,
-      ...(t['name:en'] && t['name:en'] !== t.name ? { alt: t['name:en'] } : {}),
+      ...(display !== t.name ? { alt: t.name }
+          : t['name:en'] && t['name:en'] !== t.name ? { alt: t['name:en'] } : {}),
+      ...(aliases.length ? { aliases } : {}),
       ...(t.opening_hours ? { hours: t.opening_hours } : {}),
       ...(t.wheelchair ? { wheelchair: t.wheelchair } : {}),
       ...(t.phone || t['contact:phone'] ? { phone: t.phone || t['contact:phone'] } : {}),
@@ -274,6 +309,12 @@ async function main() {
   // naming an existing OSM feature to sit beside.
   let curatedCount = 0
   for (const p of curated.places?.items ?? []) {
+    // Once OSM gains a feature we hand-added, the curated row is dead weight
+    // and shows up as a doubled pin. Drop it and say so, loudly.
+    if (anchors.has(norm(p.name))) {
+      warn(`curated "${p.name}" now exists in OSM — delete it from places.json`)
+      continue
+    }
     if (p.lat != null && p.lon != null) {
       if (!inCampus(p.lon, p.lat)) { warn(`curated "${p.id}" is outside the campus boundary`); continue }
       const { anchor, ...rest } = p
@@ -372,11 +413,26 @@ async function main() {
     // OSM is inconsistent here: mostly "Hall 5 Mess", but also "Mess Hall 14".
     const cand = [`${h.name} Mess`, `Mess ${h.name}`, h.name,
                   h.name.replace(/^GH (\d+)$/, 'Girls Hostel $1'),
+                  // Some halls are numbered in the girls' series in OSM but
+                  // plain "Hall N" by campusmess — Hall 6 is Girls Hostel 6.
+                  h.name.replace(/^Hall (\d+)$/, 'Girls Hostel $1'),
                   h.name.replace(/^Hall (\d+)$/, 'Hall $1 Block A')]
     for (const c of cand) {
       if (anchors.has(norm(c))) { h.at = anchors.get(norm(c)).name; messLocated++; break }
     }
     if (!h.at) warn(`mess hall "${h.name}" has no matching OSM feature`)
+  }
+
+  // The same facility is often mapped twice — once as a node, once as the room
+  // or building around it. Same name at the same spot is one place.
+  const atPoint = new Map()
+  for (const p of [...byId.values()]) {
+    const k = `${norm(p.name)}@${p.lat.toFixed(5)},${p.lon.toFixed(5)}`
+    const hit = atPoint.get(k)
+    if (!hit) { atPoint.set(k, p); continue }
+    // Keep whichever record carries more detail.
+    const score = (x) => Object.keys(x).length + (x.unnamed ? -5 : 0)
+    if (score(p) > score(hit)) { byId.delete(hit.id); atPoint.set(k, p) } else { byId.delete(p.id) }
   }
 
   const poiList = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))
