@@ -213,9 +213,13 @@ kbd {
   gap: 10px;
 }
 #foot .by {
-  font-size: 11.5px;
+  padding: 7px 11px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: 12px;
   color: var(--fg-3);
-  text-shadow: 0 0 4px var(--halo), 0 0 8px var(--halo);
+  white-space: nowrap;
 }
 #foot .by a {
   display: inline;
@@ -417,6 +421,18 @@ kbd {
 }
 #palette-input::placeholder { color: var(--fg-3); }
 #palette-timing { font-family: var(--mono); font-size: 10px; color: var(--fg-3); }
+#palette-close {
+  display: none;
+  flex: none;
+  width: 30px; height: 30px;
+  margin-right: -6px;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--fg-3);
+  border-radius: var(--r);
+}
+#palette-close:hover { color: var(--fg); }
 
 #palette-results { flex: 1; overflow-y: auto; padding: 5px; }
 #palette-results::-webkit-scrollbar { width: 8px; }
@@ -570,8 +586,9 @@ kbd {
     display: flex;
     justify-content: center;
   }
+  #foot { gap: 6px; }
   #foot > a { padding: 6px 10px; font-size: 12px; }
-  #foot .by { font-size: 11px; }
+  #foot .by { padding: 6px 9px; font-size: 11.5px; }
   body:has(#panel:not([hidden])) #foot { display: none; }
 
   /* Eighteen labels loose over the map is clutter whichever way they wrap, so
@@ -734,6 +751,7 @@ kbd {
     padding-top: env(safe-area-inset-top);
   }
   #palette-input { padding: 16px 0; font-size: 16px; } /* 16px stops iOS zooming in */
+  #palette-close { display: grid; }
   #palette-results { padding: 4px 4px calc(12px + env(safe-area-inset-bottom)); }
   .row { padding: 11px 12px; }
   .row-title { font-size: 14.5px; }

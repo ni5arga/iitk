@@ -12,7 +12,7 @@ const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 
 const GROUP: Record<Kind, string> = {
-  mess: 'Mess', place: 'Places', person: 'People',
+  mess: 'Mess', place: 'Places', person: 'Faculty',
   layer: 'Layers', action: 'Commands', hint: '',
 }
 const ORDER: Kind[] = ['mess', 'place', 'person', 'layer', 'action']
@@ -35,10 +35,19 @@ export function initPalette(h: PaletteHost) {
   input.addEventListener('keydown', onKey)
 
   root.addEventListener('mousedown', (e) => {
-    // Click on the backdrop closes; clicks inside the box must not steal focus.
-    if (e.target === root) closePalette()
-    else e.preventDefault()
+    // Tapping the backdrop closes. Inside the box, swallow the default so a
+    // click on a result does not blur the input — but never for the input
+    // itself or a real control, or a tap can no longer refocus it and the
+    // on-screen keyboard will not come back.
+    const t = e.target as HTMLElement
+    if (t === root) { closePalette(); return }
+    if (t === input || t.closest('button, a, input')) return
+    e.preventDefault()
   })
+
+  // Full-screen on a phone means no backdrop to tap and no Escape key, so the
+  // palette needs a way out that does not depend on either.
+  document.getElementById('palette-close')!.addEventListener('click', closePalette)
 
   list.addEventListener('click', (e) => {
     const row = (e.target as HTMLElement).closest('.row') as HTMLElement | null
@@ -182,7 +191,7 @@ function paintCursor() {
 function welcome() {
   const ex = host.index.examples()
   return `<div class="empty">
-    <b>Search every place, person and menu on campus</b>
+    <b>Places, profs and mess menus</b>
     ${ex.map((e) => `<code data-try="${esc(e)}">${esc(e)}</code>`).join('')}
   </div>`
 }

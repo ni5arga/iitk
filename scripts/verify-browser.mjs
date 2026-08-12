@@ -204,6 +204,32 @@ async function check(name, width, height, theme) {
 
     if (SHOTS) await page.screenshot({ path: join(ROOT, `.verify/${name}-palette.png`) })
 
+    // Dismissing the keyboard blurs the input. Tapping it again must refocus,
+    // or a phone user is stuck staring at a search box that will not type.
+    await page.evaluate(() => document.getElementById('palette-input').blur())
+    await page.click('#palette-input')
+    const refocused = await page.evaluate(() =>
+      document.activeElement?.id === 'palette-input')
+    ok(refocused, 'tapping the input refocuses it after a blur')
+
+    // And there must be a way out that needs neither Escape nor a backdrop,
+    // because the full-screen phone layout has neither.
+    const exitVisible = await page.evaluate(() => {
+      const b = document.getElementById('palette-close')
+      return b ? getComputedStyle(b).display !== 'none' : false
+    })
+    ok(!sheetMode || exitVisible, 'a visible close button exists on phones')
+    if (exitVisible) {
+      await page.click('#palette-close')
+      const shut = await page.evaluate(() => document.getElementById('palette').hidden)
+      ok(shut, 'close button dismisses the palette')
+      await page.keyboard.down('Meta'); await page.keyboard.press('KeyK'); await page.keyboard.up('Meta')
+      await page.waitForFunction(() => !document.getElementById('palette').hidden, { timeout: 3000 })
+      await page.type('#palette-input', 'mess dinner', { delay: 8 })
+      await page.waitForFunction(() => document.querySelectorAll('#palette-results .row').length > 0,
+        { timeout: 4000 }).catch(() => {})
+    }
+
     await page.keyboard.press('Enter')
     const panelUp = await page.waitForFunction(
       () => document.getElementById('panel') && !document.getElementById('panel').hidden,
