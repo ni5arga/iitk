@@ -28,6 +28,32 @@
       "lat": 26.5101082,
       "lon": 80.2267368,
       "desc": "Not yet mapped in OpenStreetMap — coordinates surveyed on campus."
+    },
+    {
+      "id": "technopark",
+      "name": "Technopark",
+      "cat": "academic",
+      "lat": 26.51727,
+      "lon": 80.23092,
+      "aliases": [
+        "Techno Park",
+        "Technology Park"
+      ],
+      "desc": "Not yet in OpenStreetMap — coordinates surveyed on campus."
+    },
+    {
+      "id": "c3ihub",
+      "name": "C3iHub",
+      "cat": "academic",
+      "lat": 26.517342,
+      "lon": 80.230975,
+      "level": "2",
+      "aliases": [
+        "C3i",
+        "C3I Hub",
+        "C3iHub IIT Kanpur"
+      ],
+      "desc": "Second floor of Technopark. Not yet in OpenStreetMap — coordinates surveyed on campus."
     }
   ]
 }

@@ -123,6 +123,7 @@ export function showPoi(p: Poi, menus?: MessMenu[]) {
       ['Hours', hoursRow(p.hours)],
       ['Access', wheel ? esc(wheel) : undefined],
       ['Type', p.kind ? esc(p.kind.replace(/_/g, ' ')) : undefined],
+      ['Floor', p.level ? esc(p.level) : undefined],
       ['Cuisine', p.cuisine ? esc(p.cuisine.replace(/;/g, ', ')) : undefined],
       ['Capacity', p.capacity ? esc(p.capacity) : undefined],
       ['Covered', p.covered ? esc(p.covered) : undefined],
