@@ -206,8 +206,28 @@ kbd {
   max-width: min(560px, calc(100vw - 24px));
 }
 
-#foot { flex: none; }
-#foot a {
+#foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#foot .by {
+  font-size: 11.5px;
+  color: var(--fg-3);
+  text-shadow: 0 0 4px var(--halo), 0 0 8px var(--halo);
+}
+#foot .by a {
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--fg-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-2);
+}
+#foot .by a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+#foot > a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -221,7 +241,7 @@ kbd {
   color: var(--fg-2);
   text-decoration: none;
 }
-#foot a:hover { border-color: var(--line-2); color: var(--fg); }
+#foot > a:hover { border-color: var(--line-2); color: var(--fg); }
 #foot svg { flex: none; }
 
 /* Legally required, practically ignored — keep it out of the way. */
@@ -550,7 +570,8 @@ kbd {
     display: flex;
     justify-content: center;
   }
-  #foot a { padding: 6px 10px; font-size: 12px; }
+  #foot > a { padding: 6px 10px; font-size: 12px; }
+  #foot .by { font-size: 11px; }
   body:has(#panel:not([hidden])) #foot { display: none; }
 
   /* Eighteen labels loose over the map is clutter whichever way they wrap, so
