@@ -132,10 +132,21 @@ function render(raw: string) {
 
   const seen = new Set<Kind>()
   const parts: string[] = []
-  // Keep the ranked order, but label the first row of each kind as it appears.
+
+  // Group the results, but let the groups compete: whichever kind holds the
+  // single best-scoring hit leads. A fixed order buried "Report a missing
+  // place" under twenty professors even though it was the top hit.
+  const bestOf = new Map<Kind, number>()
+  for (const h of hits) {
+    if (h.score > (bestOf.get(h.kind) ?? -Infinity)) bestOf.set(h.kind, h.score)
+  }
   const grouped = [...hits].sort((a, b) => {
-    const ga = ORDER.indexOf(a.kind), gb = ORDER.indexOf(b.kind)
-    return ga - gb || b.score - a.score
+    if (a.kind !== b.kind) {
+      const d = bestOf.get(b.kind)! - bestOf.get(a.kind)!
+      if (d) return d
+      return ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind)
+    }
+    return b.score - a.score
   })
   hits = grouped
 
