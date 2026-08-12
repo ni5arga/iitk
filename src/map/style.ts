@@ -30,6 +30,8 @@ const PALETTE = {
     routeHalo: '#0b0d10',
     route: '#58a6ff',
     focus: '#61d47c',
+    glow: '#ffcf6b',
+    glowCore: '#fff3cf',
   },
   // Deliberately not a white map. The campus is a warm paper tone, buildings a
   // half-step darker, and roads the only near-white — so the built area reads
@@ -54,6 +56,8 @@ const PALETTE = {
     routeHalo: '#fdfdfc',
     route: '#2b6cb8',
     focus: '#2a8a4d',
+    glow: '#e0a11f',
+    glowCore: '#8a6410',
   },
 } as const
 
@@ -178,8 +182,45 @@ export function buildStyle(
         paint: { 'line-color': C.route, 'line-width': 4 },
       },
 
+      // Street lamps read as a pool of light on the ground rather than a pin.
+      // Three stacked blurred circles: a wide falloff, a tighter halo, and a
+      // small bright core. Drawn under everything else so it lights the map
+      // instead of washing out the markers.
+      {
+        id: 'lamp-glow-far', type: 'circle', source: 'pois',
+        filter: ['==', ['get', 'cat'], 'light'],
+        paint: {
+          'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], 14, 8, 17, 34, 19.5, 90],
+          'circle-color': C.glow,
+          'circle-blur': 1,
+          'circle-opacity': theme === 'dark' ? 0.20 : 0.13,
+          'circle-pitch-alignment': 'map',
+        },
+      },
+      {
+        id: 'lamp-glow-near', type: 'circle', source: 'pois',
+        filter: ['==', ['get', 'cat'], 'light'],
+        paint: {
+          'circle-radius': ['interpolate', ['exponential', 2], ['zoom'], 14, 3, 17, 14, 19.5, 38],
+          'circle-color': C.glow,
+          'circle-blur': 0.9,
+          'circle-opacity': theme === 'dark' ? 0.32 : 0.18,
+          'circle-pitch-alignment': 'map',
+        },
+      },
+      {
+        id: 'lamp-core', type: 'circle', source: 'pois',
+        filter: ['==', ['get', 'cat'], 'light'],
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 1.2, 17, 2.4, 19.5, 4],
+          'circle-color': C.glowCore,
+          'circle-blur': 0.3,
+          'circle-opacity': 0.95,
+        },
+      },
       {
         id: 'poi-dot', type: 'circle', source: 'pois',
+        filter: ['!=', ['get', 'cat'], 'light'],
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 2.5, 16, 4.5, 19, 7],
           'circle-color': ['get', 'color'],

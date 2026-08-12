@@ -46,6 +46,7 @@ export const CATEGORIES = {
   transport:{ label: 'Transport',     color: '#ff9bce', pin: false },
   admin:    { label: 'Admin & help',  color: '#9ea7b3', pin: false },
   green:    { label: 'Parks',         color: '#2ea043', pin: false },
+  light:    { label: 'Street lights',  color: '#ffd97a', pin: false },
 }
 
 function classify(t) {
@@ -76,6 +77,7 @@ function classify(t) {
   if (a === 'bicycle_parking' || a === 'bicycle_repair_station' || s === 'bicycle') return 'cycle'
   if (s === 'laundry' || s === 'dry_cleaning' || a === 'laundry' || /Laundry/i.test(name)) return 'laundry'
   if (s === 'copyshop' || a === 'printer' || /\b(xerox|photocopy|printout|print)\b/i.test(name)) return 'print'
+  if (t.highway === 'street_lamp' || t.man_made === 'street_lamp') return 'light'
   if (a === 'vending_machine') return 'vending'
   if (a === 'toilets') return 'toilet'
   if (a === 'place_of_worship' || /Temple|Mosque|Church|Gurudwara/i.test(name)) return 'worship'
@@ -256,7 +258,8 @@ async function main() {
   for (const el of pois.elements) {
     const t = el.tags || {}
     if (t.name) continue
-    if (!UNNAMED_OK.has(t.amenity) && t.man_made !== 'water_tap') continue
+    const isLamp = t.highway === 'street_lamp' || t.man_made === 'street_lamp'
+    if (!isLamp && !UNNAMED_OK.has(t.amenity) && t.man_made !== 'water_tap') continue
     const lon = el.type === 'node' ? el.lon : el.center?.lon
     const lat = el.type === 'node' ? el.lat : el.center?.lat
     if (lon == null || !inCampus(lon, lat)) continue
@@ -266,7 +269,7 @@ async function main() {
     const label = { bicycle_parking: 'Cycle parking', drinking_water: 'Drinking water',
       atm: 'ATM', toilets: 'Toilets', vending_machine: 'Vending machine',
       water_point: 'Water point', bicycle_repair_station: 'Cycle repair' }[t.amenity] ||
-      (t.man_made === 'water_tap' ? 'Water tap' : 'Facility')
+      (isLamp ? 'Street light' : t.man_made === 'water_tap' ? 'Water tap' : 'Facility')
     byId.set(id, {
       id, name: label, cat, unnamed: true,
       lon: +lon.toFixed(6), lat: +lat.toFixed(6),
@@ -276,7 +279,7 @@ async function main() {
       ...(t.capacity ? { capacity: t.capacity } : {}),
       ...(t.covered ? { covered: t.covered } : {}),
       ...(t.drinking_water === 'no' ? { potable: 'no' } : {}),
-      kind: t.amenity || t.man_made,
+      kind: t.amenity || t.man_made || t.highway,
     })
   }
 

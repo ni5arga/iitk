@@ -40,6 +40,7 @@ out geom tags;`,
   nwr["man_made"];
   nwr["indoor"]["name"];
   nwr["room"]["name"];
+  node["highway"="street_lamp"];
 );
 out center tags;`,
 

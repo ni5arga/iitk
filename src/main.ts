@@ -81,8 +81,12 @@ async function start() {
   /* ── layer state ──────────────────────────────────────────────────────── */
 
   // Everything on by default — a student looking for a water cooler should not
-  // have to discover a layer toggle first.
-  const active = new Set(Object.keys(campus.categories).filter((c) => campus.meta.counts[c]))
+  // have to discover a layer toggle first. Street lights are the exception:
+  // they are ambience, not a destination, and the glow competes with the pins.
+  const DEFAULT_OFF = new Set(['light'])
+  const active = new Set(
+    Object.keys(campus.categories).filter((c) => campus.meta.counts[c] && !DEFAULT_OFF.has(c)),
+  )
   let focusId: string | null = null
 
   function poiFeatures(): GeoJSON.FeatureCollection {
