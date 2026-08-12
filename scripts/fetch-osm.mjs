@@ -63,12 +63,20 @@ out geom tags;`,
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// Every Overpass mirror now rejects requests without one, with a plain-text
+// error rather than a status code. Omitting it silently broke `npm run fetch`.
+const UA = 'iitk.nis.pet/0.1 (campus map; +https://github.com/ni5arga/iitk; hi@nis.pet)'
+
 async function overpass(query, name) {
   let lastErr
   for (let attempt = 0; attempt < 6; attempt++) {
     const endpoint = ENDPOINTS[attempt % ENDPOINTS.length]
     try {
-      const res = await fetch(endpoint, { method: 'POST', body: query })
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        body: query,
+        headers: { 'User-Agent': UA, 'Content-Type': 'text/plain;charset=UTF-8' },
+      })
       const text = await res.text()
       // Overpass reports runtime errors as an HTML page with a 200 status.
       if (!text.startsWith('{')) throw new Error(`non-JSON from ${endpoint}: ${text.slice(0, 160)}`)
