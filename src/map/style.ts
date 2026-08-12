@@ -254,6 +254,54 @@ export function buildStyle(
           'text-halo-width': 1.4,
         },
       },
+      // Everything that is not a headline category still deserves a name once
+      // you are close enough to read it — shops, ATMs, laundry, printing. They
+      // were filtered out at every zoom, so 87 named places were anonymous dots.
+      {
+        id: 'poi-label-minor', type: 'symbol', source: 'pois',
+        minzoom: 16.5,
+        filter: ['all', ['!=', ['get', 'pin'], true], ['==', ['get', 'named'], true]],
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': [FONT],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 16.5, 9.5, 19.5, 12],
+          'text-offset': [0, 1],
+          'text-anchor': 'top',
+          'text-max-width': 8,
+          'text-optional': true,
+          'text-padding': 3,
+          'symbol-sort-key': 3,
+        },
+        paint: {
+          'text-color': C.label,
+          'text-halo-color': C.labelHalo,
+          'text-halo-width': 1.3,
+        },
+      },
+      // Generic unnamed facilities last of all: "Toilets", "Cycle parking".
+      // Street lights are excluded — 23 identical labels is just noise.
+      {
+        id: 'poi-label-generic', type: 'symbol', source: 'pois',
+        minzoom: 18,
+        filter: ['all', ['!=', ['get', 'named'], true], ['!=', ['get', 'cat'], 'light']],
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': [FONT],
+          'text-size': 10,
+          'text-offset': [0, 1],
+          'text-anchor': 'top',
+          'text-max-width': 8,
+          'text-optional': true,
+          'text-padding': 3,
+          'symbol-sort-key': 4,
+        },
+        paint: {
+          'text-color': C.label,
+          'text-halo-color': C.labelHalo,
+          'text-halo-width': 1.3,
+          'text-opacity': 0.75,
+        },
+      },
       {
         id: 'poi-focus', type: 'circle', source: 'pois',
         filter: ['==', ['get', 'focus'], true],

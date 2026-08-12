@@ -102,7 +102,10 @@ async function start() {
             name: p.name,
             cat: p.cat,
             color: catColour(p.cat),
+            // `pin` = important enough to label from low zoom. `named` lets
+            // everything else pick up a label once you are zoomed right in.
             pin: !!campus.categories[p.cat]?.pin && !p.unnamed,
+            named: !p.unnamed,
             focus: p.id === focusId,
           },
           geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] },
