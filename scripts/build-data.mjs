@@ -279,6 +279,8 @@ async function main() {
       ...(t.capacity ? { capacity: t.capacity } : {}),
       ...(t.covered ? { covered: t.covered } : {}),
       ...(t.drinking_water === 'no' ? { potable: 'no' } : {}),
+      ...(t.lamp_type ? { lampType: t.lamp_type } : {}),
+      ...(t.support ? { support: t.support } : {}),
       kind: t.amenity || t.man_made || t.highway,
     })
   }

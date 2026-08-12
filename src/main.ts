@@ -386,13 +386,17 @@ async function start() {
     reportAt(e.lngLat.lat, e.lngLat.lng)
   })
 
-  map.on('click', 'poi-dot', (e) => {
-    if (picking) return
-    const id = e.features?.[0]?.properties?.id as string | undefined
-    const p = id ? byId.get(id) : undefined
-    if (p) focusPoi(p)
-  })
-  for (const layer of ['poi-dot', 'poi-label']) {
+  // Lamps are drawn as a glow instead of a dot, so they need their own hit
+  // targets — `lamp-hit` is a transparent circle sized for a fingertip.
+  const CLICKABLE = ['poi-dot', 'lamp-hit', 'poi-label', 'poi-label-minor', 'poi-label-generic']
+
+  for (const layer of CLICKABLE) {
+    map.on('click', layer, (e) => {
+      if (picking) return
+      const id = e.features?.[0]?.properties?.id as string | undefined
+      const p = id ? byId.get(id) : undefined
+      if (p) focusPoi(p)
+    })
     map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer' })
     map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = '' })
   }

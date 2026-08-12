@@ -129,6 +129,8 @@ export function showPoi(p: Poi, menus?: MessMenu[]) {
       ['Operator', p.operator ? esc(p.operator) : undefined],
       ['Price', p.price ? esc(p.price) : undefined],
       ['Potable', p.potable === 'no' ? 'no — not drinking water' : undefined],
+      ['Lamp', p.lampType ? esc(p.lampType.toUpperCase()) : undefined],
+      ['Mounted', p.support ? esc(p.support) : undefined],
       ['Phone', p.phone ? `<a href="tel:${esc(p.phone)}">${esc(p.phone)}</a>` : undefined],
       ['Website', p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.url.replace(/^https?:\/\//, '').slice(0, 34))}</a>` : undefined],
       ['Near', p.near ? esc(p.near) : undefined],

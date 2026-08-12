@@ -22,6 +22,8 @@ export interface Poi {
   desc?: string
   level?: string
   potable?: string
+  lampType?: string
+  support?: string
   near?: string
   price?: string
 }

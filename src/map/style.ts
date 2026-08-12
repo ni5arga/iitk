@@ -208,6 +208,17 @@ export function buildStyle(
           'circle-pitch-alignment': 'map',
         },
       },
+      // Invisible but hit-testable: a glow is not a tap target, and the bright
+      // core is only a few pixels across. Kept above the glow so clicks land.
+      {
+        id: 'lamp-hit', type: 'circle', source: 'pois',
+        filter: ['==', ['get', 'cat'], 'light'],
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 8, 17, 13, 19.5, 18],
+          'circle-color': C.glow,
+          'circle-opacity': 0.01,
+        },
+      },
       {
         id: 'lamp-core', type: 'circle', source: 'pois',
         filter: ['==', ['get', 'cat'], 'light'],
