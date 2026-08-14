@@ -1,16 +1,13 @@
 # Cloudflare Pages headers.
 
-# Hashed asset filenames — safe to cache forever. The explicit Content-Type is
-# belt and braces: a stylesheet served as text/html is refused outright under
-# nosniff, and that failure is invisible to curl.
-/assets/*.css
-  Content-Type: text/css; charset=utf-8
-  Cache-Control: public, max-age=31536000, immutable
-
-/assets/*.js
-  Content-Type: text/javascript; charset=utf-8
-  Cache-Control: public, max-age=31536000, immutable
-
+# Hashed asset filenames — safe to cache forever.
+#
+# Deliberately no Content-Type override here. A `_headers` rule applies to
+# whatever is served at the path, including an error or SPA-fallback body, so
+# forcing `text/javascript` made a fallback page of HTML *claim* to be a script.
+# The browser then parsed markup as code and died on "Unexpected token '<'"
+# instead of refusing it cleanly under nosniff. Cloudflare types real files
+# correctly on its own; the override only ever mislabelled the failures.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
