@@ -1,28 +1,32 @@
 /**
- * Pixel canvas API — Cloudflare Pages Functions.
+ * Pixel canvas API — Cloudflare Pages Functions, backed by D1.
  *
- *   GET  /api/pixels          whole canvas, chunked
- *   POST /api/pixels/paint    place pixels, IP rate limited
- *   POST /api/pixels/admin    moderation, needs PIXELS_ADMIN_TOKEN
+ *   GET  /api/pixels           whole canvas
+ *   GET  /api/pixels/since     only what changed after a sequence number
+ *   POST /api/pixels/paint     place pixels, IP rate limited
+ *   POST /api/pixels/admin     moderation, needs PIXELS_ADMIN_TOKEN
  *
- * Bindings expected on the Pages project:
- *   PIXELS               KV namespace (canvas, rate limits, bans, log buffer)
+ * Bindings on the Pages project:
+ *   DB                   D1 database (canvas, rate limits, bans, log buffer)
  *   DISCORD_WEBHOOK      secret — never reaches the browser
  *   PIXELS_ADMIN_TOKEN   secret — bearer token for the admin route
  *
- * Storage note: KV is eventually consistent and has no transactions, so two
- * people painting the same 128×128 chunk within a second can lose one write.
- * That is an acceptable trade for a campus toy; a Durable Object per chunk is
- * the fix if this ever gets busy.
+ * Why D1 and not KV. KV bills per *operation* and the free tier allows 1,000
+ * writes a day. One paint request cost five of them — the rate-limit counter,
+ * the chunk, the Discord buffer, the attribution record and the live feed — so
+ * the canvas ran dry after roughly 200 requests. A shared canvas is
+ * write-heavy, which is the one shape KV is worst at.
+ *
+ * D1 bills per *row* and allows 100,000 row-writes a day, and the data was
+ * relational all along: one row per pixel, a monotonic `seq` driving the live
+ * feed, and the painter recorded on the row itself. That also deletes the chunk
+ * packing, every list operation, and the separate `recent` and `feed` keys.
  */
 
-import {
-  CHUNK, GRID_W, GRID_H, PALETTE, chunkKey, chunkOf, inBounds,
-  packChunk, unpackChunk, type Pixel,
-} from '../../../src/pixels/grid'
+import { CHUNK, GRID_W, GRID_H, PALETTE, chunkOf, inBounds, type Pixel } from '../../../src/pixels/grid'
 
 interface Env {
-  PIXELS: KVNamespace
+  DB: D1Database
   DISCORD_WEBHOOK?: string
   PIXELS_ADMIN_TOKEN?: string
 }
@@ -39,90 +43,117 @@ const json = (body: unknown, status = 200, extra: HeadersInit = {}) =>
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra },
   })
 
+/* ── schema ──────────────────────────────────────────────────────────────── */
+// Created on demand, so deploying needs only the binding and no migration step.
+
+let ready = false
+async function ensureSchema(env: Env) {
+  if (ready) return
+  await env.DB.batch([
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS pixels (
+      x INTEGER NOT NULL, y INTEGER NOT NULL, c INTEGER NOT NULL,
+      seq INTEGER NOT NULL, painter TEXT, at INTEGER,
+      PRIMARY KEY (x, y))`),
+    // The live feed is "rows above a sequence number", so this index is what
+    // keeps polling cheap instead of a table scan.
+    env.DB.prepare('CREATE INDEX IF NOT EXISTS pixels_seq ON pixels(seq)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS bans (id TEXT PRIMARY KEY, at INTEGER)'),
+    env.DB.prepare('CREATE TABLE IF NOT EXISTS limits (id TEXT PRIMARY KEY, n INTEGER, until INTEGER)'),
+  ])
+  ready = true
+}
+
+const getMeta = async (env: Env, k: string, fallback = '0') => {
+  const row = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind(k).first<{ v: string }>()
+  return row?.v ?? fallback
+}
+const setMeta = (env: Env, k: string, v: string) =>
+  env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v')
+    .bind(k, v)
+
 /* ── identity ────────────────────────────────────────────────────────────── */
 
 /**
- * A short, stable id derived from the client IP. We never store or log the
- * address itself — bans and rate limits key off this instead, which is enough
+ * A short, stable id derived from the client IP. The address itself is never
+ * stored or logged — bans and rate limits key off this instead, which is enough
  * to moderate with and useless for identifying anyone off-platform.
  */
 async function painterId(req: Request): Promise<string> {
   const ip = req.headers.get('cf-connecting-ip') ?? '0.0.0.0'
-  const bytes = new TextEncoder().encode(`iitk-pixels:${ip}`)
-  const digest = await crypto.subtle.digest('SHA-256', bytes)
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`iitk-pixels:${ip}`))
   return [...new Uint8Array(digest)].slice(0, 5)
     .map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
 /* ── canvas ──────────────────────────────────────────────────────────────── */
 
+/** Chunked exactly as before, so this migration is invisible to the client. */
 async function readCanvas(env: Env) {
-  const chunks: Record<string, string> = {}
-  let cursor: string | undefined
-  do {
-    const page = await env.PIXELS.list({ prefix: 'c:', cursor, limit: 1000 })
-    for (const k of page.keys) {
-      const v = await env.PIXELS.get(k.name)
-      if (v) chunks[k.name.slice(2)] = v
-    }
-    cursor = page.list_complete ? undefined : page.cursor
-  } while (cursor)
-  return chunks
+  const { results } = await env.DB.prepare('SELECT x, y, c FROM pixels').all<Pixel>()
+  const grouped: Record<string, number[]> = {}
+  for (const p of results) {
+    const { cx, cy } = chunkOf(p.x, p.y)
+    ;(grouped[`${cx}:${cy}`] ??= []).push(p.x, p.y, p.c)
+  }
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(grouped)) out[k] = v.join(',')
+  return out
 }
 
-/** Apply pixels to their chunks. Returns how many actually changed. */
-async function applyPixels(env: Env, pixels: Pixel[]): Promise<number> {
-  const byChunk = new Map<string, Pixel[]>()
+/**
+ * Write pixels and bump the sequence in one batch, so a reader can never see
+ * half a stroke. Colour 0 deletes rather than storing a transparent row.
+ */
+async function applyPixels(env: Env, pixels: Pixel[], painter: string) {
+  const seq = Number(await getMeta(env, 'seq')) + 1
+  const now = Date.now()
+  const stmts: D1PreparedStatement[] = []
   for (const p of pixels) {
-    const { cx, cy } = chunkOf(p.x, p.y)
-    const key = chunkKey(cx, cy)
-    const arr = byChunk.get(key)
-    if (arr) arr.push(p); else byChunk.set(key, [p])
+    stmts.push(p.c === 0
+      ? env.DB.prepare('DELETE FROM pixels WHERE x = ? AND y = ?').bind(p.x, p.y)
+      : env.DB.prepare(
+          `INSERT INTO pixels (x, y, c, seq, painter, at) VALUES (?, ?, ?, ?, ?, ?)
+           ON CONFLICT(x, y) DO UPDATE SET
+             c = excluded.c, seq = excluded.seq, painter = excluded.painter, at = excluded.at`,
+        ).bind(p.x, p.y, p.c, seq, painter, now))
   }
-
-  let changed = 0
-  for (const [key, batch] of byChunk) {
-    const existing = unpackChunk((await env.PIXELS.get(key)) ?? '')
-    const merged = new Map(existing.map((p) => [`${p.x},${p.y}`, p]))
-    for (const p of batch) {
-      const k = `${p.x},${p.y}`
-      if (p.c === 0) merged.delete(k)
-      else merged.set(k, p)
-      changed++
-    }
-    if (merged.size) await env.PIXELS.put(key, packChunk(merged.values()))
-    else await env.PIXELS.delete(key)
+  // A deleted row cannot show up in a "seq > n" query, so erases are recorded
+  // separately — otherwise rubbed-out pixels never disappear for anyone else.
+  const erased = pixels.filter((p) => p.c === 0)
+  if (erased.length) {
+    stmts.push(setMeta(env, 'erased', JSON.stringify({ seq, px: erased.map((p) => [p.x, p.y]) })))
   }
-  return changed
+  stmts.push(setMeta(env, 'seq', String(seq)))
+  await env.DB.batch(stmts)
 }
 
 /* ── discord logging ─────────────────────────────────────────────────────── */
 
 /**
- * Every pixel is logged, but batched. Discord rate limits a webhook to a
- * handful of posts per second; one message per pixel would be throttled into
- * uselessness within moments of anyone actually drawing.
+ * Every pixel is logged, but batched. A Discord webhook allows a handful of
+ * posts per second; one message per pixel would be throttled into uselessness
+ * the moment two people drew at once.
  */
 const LOG_FLUSH_AT = 25
 const LOG_MAX_AGE_MS = 45_000
 
 async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   if (!env.DISCORD_WEBHOOK) return
-  const raw = await env.PIXELS.get('log:buf')
-  const buf = raw ? (JSON.parse(raw) as { t: number; lines: string[] }) : { t: Date.now(), lines: [] }
-
+  const raw = await getMeta(env, 'logbuf', '')
+  const buf = raw ? JSON.parse(raw) as { t: number; lines: string[] } : { t: Date.now(), lines: [] }
   for (const p of pixels) {
     buf.lines.push(`\`${who}\` ${note}(${p.x},${p.y}) ${p.c === 0 ? 'erase' : PALETTE[p.c]}`)
   }
+  if (!pixels.length && note) buf.lines.push(`\`${who}\` ${note}`)
 
-  const stale = Date.now() - buf.t > LOG_MAX_AGE_MS
-  if (buf.lines.length < LOG_FLUSH_AT && !stale) {
-    await env.PIXELS.put('log:buf', JSON.stringify(buf))
+  if (buf.lines.length < LOG_FLUSH_AT && Date.now() - buf.t <= LOG_MAX_AGE_MS) {
+    await setMeta(env, 'logbuf', JSON.stringify(buf)).run()
     return
   }
 
   const lines = buf.lines.splice(0, 60)
-  await env.PIXELS.put('log:buf', JSON.stringify({ t: Date.now(), lines: buf.lines }))
+  await setMeta(env, 'logbuf', JSON.stringify({ t: Date.now(), lines: buf.lines })).run()
   await fetch(env.DISCORD_WEBHOOK, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -138,123 +169,58 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   }).catch(() => { /* logging must never break painting */ })
 }
 
-/* ── live feed ───────────────────────────────────────────────────────────── */
-
-/**
- * A rolling log of recent edits so clients can catch up without re-downloading
- * the whole canvas. Each entry carries a monotonic sequence number; a client
- * says "I have up to N" and gets only what came after.
- *
- * Cloudflare Pages Functions cannot hold a WebSocket, so this is polled — but
- * polling a few hundred bytes every couple of seconds is far cheaper than
- * re-fetching every chunk, and it means an edit shows up without a reload.
- */
-const FEED_MAX = 500
-
-async function pushFeed(env: Env, pixels: Pixel[]) {
-  const raw = await env.PIXELS.get('feed')
-  const feed = raw
-    ? (JSON.parse(raw) as { seq: number; items: [number, number, number, number][] })
-    : { seq: 0, items: [] }
-  for (const p of pixels) {
-    feed.seq++
-    feed.items.push([feed.seq, p.x, p.y, p.c])
-  }
-  if (feed.items.length > FEED_MAX) feed.items.splice(0, feed.items.length - FEED_MAX)
-  await env.PIXELS.put('feed', JSON.stringify(feed))
-}
-
-/* ── attribution ─────────────────────────────────────────────────────────── */
-
-/**
- * A bounded record of who painted what, so a moderator can click a pixel and
- * ban whoever put it there. Deliberately short-lived and capped: it is a
- * moderation aid, not a history of the canvas.
- */
-const RECENT_MAX = 600
-
-async function rememberPainter(env: Env, who: string, pixels: Pixel[]) {
-  const raw = await env.PIXELS.get('recent')
-  const list = raw ? (JSON.parse(raw) as [number, number, string, number][]) : []
-  for (const p of pixels) list.push([p.x, p.y, who, Date.now()])
-  if (list.length > RECENT_MAX) list.splice(0, list.length - RECENT_MAX)
-  await env.PIXELS.put('recent', JSON.stringify(list))
-}
-
-async function painterAt(env: Env, x: number, y: number) {
-  const raw = await env.PIXELS.get('recent')
-  if (!raw) return null
-  const list = JSON.parse(raw) as [number, number, string, number][]
-  // Last write wins, so walk backwards.
-  for (let i = list.length - 1; i >= 0; i--) {
-    if (list[i]![0] === x && list[i]![1] === y) {
-      return { id: list[i]![2], at: list[i]![3] }
-    }
-  }
-  return null
-}
-
 /* ── routes ──────────────────────────────────────────────────────────────── */
 
 export const onRequest: PagesFunction<Env> = async (ctx) => {
   const { request, env } = ctx
   const path = (ctx.params.path as string[] | undefined)?.join('/') ?? ''
 
-  if (!env.PIXELS) {
-    return json({ error: 'canvas storage is not configured on this deployment' }, 503)
+  if (!env.DB) {
+    return json({
+      error: 'canvas storage is not configured — bind a D1 database as DB on this Pages project',
+    }, 503)
   }
+  await ensureSchema(env)
 
   /* GET /api/pixels */
   if (request.method === 'GET' && path === '') {
-    const [chunks, feedRaw, epoch] = await Promise.all([
-      readCanvas(env),
-      env.PIXELS.get('feed'),
-      env.PIXELS.get('epoch'),
+    const [chunks, seq, epoch] = await Promise.all([
+      readCanvas(env), getMeta(env, 'seq'), getMeta(env, 'epoch'),
     ])
-    const feed = feedRaw ? JSON.parse(feedRaw) as { seq: number } : { seq: 0 }
     return json({
       grid: { w: GRID_W, h: GRID_H, chunk: CHUNK },
-      burst: BURST,
-      cooldown: COOLDOWN_S,
-      maxPerRequest: MAX_PER_REQUEST,
-      seq: feed.seq,
-      epoch: epoch ?? '0',
-      chunks,
+      burst: BURST, cooldown: COOLDOWN_S, maxPerRequest: MAX_PER_REQUEST,
+      seq: Number(seq), epoch, chunks,
     })
   }
 
-  /* GET /api/pixels/since?seq=N — just what changed. */
+  /* GET /api/pixels/since?seq=N */
   if (request.method === 'GET' && path === 'since') {
     const since = Number(new URL(request.url).searchParams.get('seq') ?? 0)
-    const [raw, epoch] = await Promise.all([env.PIXELS.get('feed'), env.PIXELS.get('epoch')])
-    const feed = raw
-      ? (JSON.parse(raw) as { seq: number; items: [number, number, number, number][] })
-      : { seq: 0, items: [] }
-
-    // Behind the window the feed still holds? Only a full reload is correct.
-    const oldest = feed.items.length ? feed.items[0]![0] : feed.seq
-    const stale = since > 0 && since < oldest - 1
-    return json({
-      seq: feed.seq,
-      epoch: epoch ?? '0',
-      stale,
-      pixels: stale ? [] : feed.items.filter((i) => i[0] > since).map((i) => [i[1], i[2], i[3]]),
-    }, 200, { 'cache-control': 'no-store' })
+    const [rows, head, epoch, erasedRaw] = await Promise.all([
+      env.DB.prepare('SELECT x, y, c FROM pixels WHERE seq > ? LIMIT 4000').bind(since).all<Pixel>(),
+      getMeta(env, 'seq'), getMeta(env, 'epoch'), getMeta(env, 'erased', ''),
+    ])
+    const pixels: [number, number, number][] = rows.results.map((p) => [p.x, p.y, p.c])
+    if (erasedRaw) {
+      const e = JSON.parse(erasedRaw) as { seq: number; px: [number, number][] }
+      if (e.seq > since) for (const [x, y] of e.px) pixels.push([x, y, 0])
+    }
+    return json({ seq: Number(head), epoch, stale: false, pixels })
   }
 
   /* POST /api/pixels/paint */
   if (request.method === 'POST' && path === 'paint') {
     const who = await painterId(request)
 
-    if (await env.PIXELS.get(`ban:${who}`)) {
-      return json({ error: 'You are banned from painting.', id: who }, 403)
-    }
+    const banned = await env.DB.prepare('SELECT 1 FROM bans WHERE id = ?').bind(who).first()
+    if (banned) return json({ error: 'You are banned from painting.', id: who }, 403)
 
     let body: { pixels?: [number, number, number][] }
     try { body = await request.json() } catch { return json({ error: 'bad json' }, 400) }
 
     const raw = body.pixels
-    if (!Array.isArray(raw) || raw.length === 0) return json({ error: 'no pixels' }, 400)
+    if (!Array.isArray(raw) || !raw.length) return json({ error: 'no pixels' }, 400)
     if (raw.length > MAX_PER_REQUEST) {
       return json({ error: `at most ${MAX_PER_REQUEST} pixels per request` }, 400)
     }
@@ -263,7 +229,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     for (const item of raw) {
       if (!Array.isArray(item) || item.length !== 3) return json({ error: 'bad pixel' }, 400)
       const [x, y, c] = item.map(Number)
-      // Validate server-side: the client is not trusted about position or colour.
+      // The client is not trusted about position or colour.
       if (!inBounds(x!, y!)) return json({ error: `pixel out of bounds: ${x},${y}` }, 400)
       if (!Number.isInteger(c) || c! < 0 || c! >= PALETTE.length) {
         return json({ error: `bad colour index: ${c}` }, 400)
@@ -271,39 +237,36 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
       pixels.push({ x: x!, y: y!, c: c! })
     }
 
-    // Rate limit: a budget of BURST pixels, then a forced cooldown.
     const now = Date.now()
-    const rlRaw = await env.PIXELS.get(`rl:${who}`)
-    const rl = rlRaw ? (JSON.parse(rlRaw) as { n: number; until: number }) : { n: 0, until: 0 }
+    const rl = await env.DB.prepare('SELECT n, until FROM limits WHERE id = ?')
+      .bind(who).first<{ n: number; until: number }>() ?? { n: 0, until: 0 }
 
     if (rl.until > now) {
-      return json({
-        error: 'cooling down', cooldownUntil: rl.until, remaining: 0, id: who,
-      }, 429, { 'retry-after': String(Math.ceil((rl.until - now) / 1000)) })
+      return json({ error: 'cooling down', cooldownUntil: rl.until, remaining: 0, id: who },
+        429, { 'retry-after': String(Math.ceil((rl.until - now) / 1000)) })
     }
-    if (rl.until && rl.until <= now) rl.n = 0 // cooldown served, budget refills
-
+    if (rl.until && rl.until <= now) rl.n = 0     // cooldown served, budget refills
     if (rl.n + pixels.length > BURST) {
       return json({
-        error: `only ${BURST - rl.n} left before a break`, remaining: Math.max(0, BURST - rl.n), id: who,
+        error: `only ${BURST - rl.n} left before a break`,
+        remaining: Math.max(0, BURST - rl.n), id: who,
       }, 429)
     }
 
-    rl.n += pixels.length
-    rl.until = rl.n >= BURST ? now + COOLDOWN_S * 1000 : 0
-    await env.PIXELS.put(`rl:${who}`, JSON.stringify(rl), { expirationTtl: 3600 })
+    const n = rl.n + pixels.length
+    const until = n >= BURST ? now + COOLDOWN_S * 1000 : 0
+    await env.DB.prepare(
+      `INSERT INTO limits (id, n, until) VALUES (?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET n = excluded.n, until = excluded.until`,
+    ).bind(who, n, until).run()
 
-    await applyPixels(env, pixels)
+    await applyPixels(env, pixels, who)
     ctx.waitUntil(logPixels(env, who, pixels))
-    ctx.waitUntil(rememberPainter(env, who, pixels))
-    ctx.waitUntil(pushFeed(env, pixels))
 
     return json({
-      ok: true,
-      painted: pixels.length,
-      remaining: Math.max(0, BURST - rl.n),
-      cooldownUntil: rl.until || null,
-      id: who,
+      ok: true, painted: pixels.length,
+      remaining: Math.max(0, BURST - n),
+      cooldownUntil: until || null, id: who,
     })
   }
 
@@ -318,33 +281,38 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     try { body = await request.json() } catch { return json({ error: 'bad json' }, 400) }
     const op = String(body.op ?? '')
 
-    const rect = () => ({
-      x: Math.max(0, Number(body.x) | 0), y: Math.max(0, Number(body.y) | 0),
-      w: Math.min(Number(body.w) | 0, GRID_W), h: Math.min(Number(body.h) | 0, GRID_H),
-    })
-
     switch (op) {
-      /* Erase or flood a rectangle — the two bulk cleanup tools. */
       case 'clearRect':
       case 'fillRect': {
-        const { x, y, w, h } = rect()
+        const x = Math.max(0, Number(body.x) | 0), y = Math.max(0, Number(body.y) | 0)
+        const w = Math.min(Number(body.w) | 0, GRID_W), h = Math.min(Number(body.h) | 0, GRID_H)
         if (w <= 0 || h <= 0) return json({ error: 'w and h must be positive' }, 400)
         if (w * h > 40_000) return json({ error: 'rectangle too large, split it up' }, 400)
         const c = op === 'clearRect' ? 0 : Number(body.c) | 0
         if (c < 0 || c >= PALETTE.length) return json({ error: 'bad colour' }, 400)
-        const px: Pixel[] = []
-        for (let dy = 0; dy < h; dy++) {
-          for (let dx = 0; dx < w; dx++) {
-            if (inBounds(x + dx, y + dy)) px.push({ x: x + dx, y: y + dy, c })
+
+        if (op === 'clearRect') {
+          // One statement rather than up to 40,000 individual row writes.
+          const seq = Number(await getMeta(env, 'seq')) + 1
+          await env.DB.batch([
+            env.DB.prepare('DELETE FROM pixels WHERE x >= ? AND x < ? AND y >= ? AND y < ?')
+              .bind(x, x + w, y, y + h),
+            setMeta(env, 'epoch', String(Date.now())),   // a bulk erase is not a diff
+            setMeta(env, 'seq', String(seq)),
+          ])
+        } else {
+          const px: Pixel[] = []
+          for (let dy = 0; dy < h; dy++) {
+            for (let dx = 0; dx < w; dx++) {
+              if (inBounds(x + dx, y + dy)) px.push({ x: x + dx, y: y + dy, c })
+            }
           }
+          for (let i = 0; i < px.length; i += 500) await applyPixels(env, px.slice(i, i + 500), 'ADMIN')
         }
-        await applyPixels(env, px)
-        ctx.waitUntil(pushFeed(env, px))
-        ctx.waitUntil(logPixels(env, 'ADMIN', px.slice(0, 5), `${op} ${w}x${h} `))
-        return json({ ok: true, op, affected: px.length })
+        ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${w}x${h} at ${x},${y}`))
+        return json({ ok: true, op, affected: w * h })
       }
 
-      /* Stamp arbitrary art over whatever is there. No rate limit. */
       case 'paint': {
         const raw = body.pixels as [number, number, number][] | undefined
         if (!Array.isArray(raw) || !raw.length) return json({ error: 'no pixels' }, 400)
@@ -353,70 +321,67 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         for (const [x, y, c] of raw) {
           if (inBounds(x, y) && c >= 0 && c < PALETTE.length) px.push({ x, y, c })
         }
-        await applyPixels(env, px)
-        ctx.waitUntil(pushFeed(env, px))
+        for (let i = 0; i < px.length; i += 500) await applyPixels(env, px.slice(i, i + 500), 'ADMIN')
         ctx.waitUntil(logPixels(env, 'ADMIN', px.slice(0, 5), 'stamp '))
         return json({ ok: true, op, affected: px.length })
       }
 
-      /* Wipe every user-drawn pixel. The baked seed art is untouched — it is a
-         static file, not storage, so the canvas is never left blank. */
+      /* Wipe every user-drawn pixel. The seeded art is a static file, not
+         storage, so the canvas is never left blank. */
       case 'clearAll': {
-        let n = 0, cursor: string | undefined
-        do {
-          const page = await env.PIXELS.list({ prefix: 'c:', cursor, limit: 1000 })
-          for (const k of page.keys) { await env.PIXELS.delete(k.name); n++ }
-          cursor = page.list_complete ? undefined : page.cursor
-        } while (cursor)
-        // A full wipe cannot be sent as a diff; bump the epoch and every client
-        // reloads from scratch on its next poll.
-        await env.PIXELS.put('epoch', String(Date.now()))
-        await env.PIXELS.delete('feed')
-        ctx.waitUntil(logPixels(env, 'ADMIN', [], `cleared the whole canvas (${n} chunks) `))
-        return json({ ok: true, op, chunksDeleted: n })
+        await env.DB.batch([
+          env.DB.prepare('DELETE FROM pixels'),
+          setMeta(env, 'epoch', String(Date.now())),
+          setMeta(env, 'erased', ''),
+        ])
+        ctx.waitUntil(logPixels(env, 'ADMIN', [], 'cleared the whole canvas'))
+        return json({ ok: true, op })
       }
 
       case 'ban':
       case 'unban': {
         const id = String(body.id ?? '').trim()
         if (!/^[0-9a-f]{10}$/.test(id)) return json({ error: 'id must be the 10-char painter id' }, 400)
-        if (op === 'ban') await env.PIXELS.put(`ban:${id}`, String(Date.now()))
-        else await env.PIXELS.delete(`ban:${id}`)
-        ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${id} `))
+        await (op === 'ban'
+          ? env.DB.prepare('INSERT OR REPLACE INTO bans (id, at) VALUES (?, ?)').bind(id, Date.now())
+          : env.DB.prepare('DELETE FROM bans WHERE id = ?').bind(id)).run()
+        ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${id}`))
         return json({ ok: true, op, id })
       }
 
-      /* Who painted this pixel — powers click-to-ban in the admin UI. */
+      case 'bans': {
+        const { results } = await env.DB.prepare('SELECT id FROM bans').all<{ id: string }>()
+        return json({ ok: true, bans: results.map((r) => r.id) })
+      }
+
+      /* Who painted this pixel. The row carries it, so there is no side list to
+         fall out of date or age out. */
       case 'who': {
         const x = Number(body.x) | 0, y = Number(body.y) | 0
         if (!inBounds(x, y)) return json({ error: 'out of bounds' }, 400)
-        const hit = await painterAt(env, x, y)
-        return json({ ok: true, x, y, painter: hit })
+        const row = await env.DB.prepare('SELECT painter, at FROM pixels WHERE x = ? AND y = ?')
+          .bind(x, y).first<{ painter: string; at: number }>()
+        return json({ ok: true, x, y, painter: row ? { id: row.painter, at: row.at } : null })
       }
 
-      /* Recent activity feed for the dashboard. */
       case 'recent': {
-        const raw = await env.PIXELS.get('recent')
-        const list = raw ? (JSON.parse(raw) as [number, number, string, number][]) : []
-        return json({ ok: true, recent: list.slice(-120).reverse() })
-      }
-
-      case 'bans': {
-        const page = await env.PIXELS.list({ prefix: 'ban:', limit: 1000 })
-        return json({ ok: true, bans: page.keys.map((k) => k.name.slice(4)) })
+        const { results } = await env.DB.prepare(
+          'SELECT x, y, painter, at FROM pixels ORDER BY at DESC LIMIT 120').all()
+        return json({ ok: true, recent: results })
       }
 
       case 'stats': {
-        const chunks = await readCanvas(env)
-        const pixels = Object.values(chunks).reduce((n, s) => n + unpackChunk(s).length, 0)
-        const bans = await env.PIXELS.list({ prefix: 'ban:', limit: 1000 })
-        return json({ ok: true, chunks: Object.keys(chunks).length, pixels, bans: bans.keys.length })
+        const [px, bans] = await Promise.all([
+          env.DB.prepare('SELECT COUNT(*) AS n FROM pixels').first<{ n: number }>(),
+          env.DB.prepare('SELECT COUNT(*) AS n FROM bans').first<{ n: number }>(),
+        ])
+        return json({ ok: true, pixels: px?.n ?? 0, bans: bans?.n ?? 0, chunks: 0 })
       }
 
       default:
         return json({
           error: 'unknown op',
-          ops: ['clearRect', 'fillRect', 'paint', 'clearAll', 'ban', 'unban', 'bans', 'stats'],
+          ops: ['clearRect', 'fillRect', 'paint', 'clearAll', 'ban', 'unban', 'bans', 'who', 'recent', 'stats'],
         }, 400)
     }
   }

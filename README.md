@@ -160,9 +160,17 @@ colour, or skip the cooldown.
 
 | Binding | Type | Purpose |
 |---|---|---|
-| `PIXELS` | KV namespace | canvas chunks, rate limits, bans, log buffer |
+| `DB` | D1 database | canvas, rate limits, bans, log buffer |
 | `DISCORD_WEBHOOK` | secret | pixel log; server-side only, never sent to the browser |
 | `PIXELS_ADMIN_TOKEN` | secret | bearer token for the admin route |
+
+**Not KV.** KV bills per operation and its free tier allows 1,000 writes a day.
+One paint request cost five of them — rate-limit counter, canvas chunk, Discord
+buffer, attribution record, live feed — so the canvas ran dry after about 200
+requests, and live polling alone would exhaust the read quota in ~35 tab-hours.
+D1 bills per row, allows 100,000 row-writes a day, and suits the data better:
+one row per pixel, a monotonic `seq` driving the live feed, and the painter
+recorded on the row instead of in a side list.
 
 Without the KV binding the page renders the seeded art **read-only** and the
 status bar says so — a missing binding degrades rather than breaks. That is
@@ -171,13 +179,15 @@ also what `vite preview` shows locally, since it does not run Functions.
 Creating the namespace is the one step that cannot be done from this repo:
 
 ```bash
-npx wrangler kv namespace create PIXELS      # prints an id
+npx wrangler d1 create iitk-pixels     # prints a database id
 ```
 
 Then in the dashboard: **your Pages project → Settings → Bindings → Add →
-KV namespace**, variable name exactly `PIXELS`, pointing at that namespace.
-Add it to **both** Production and Preview, then redeploy. `/api/pixels` returns
+D1 database**, variable name exactly `DB`, pointing at that database. Add it to
+**both** Production and Preview, then redeploy. `/api/pixels` returns
 `503 canvas storage is not configured` until it is bound.
+
+Tables are created on first request, so there is no migration step.
 
 ### Identity and logging
 
