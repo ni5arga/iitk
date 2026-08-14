@@ -86,9 +86,15 @@ export class Admin {
     this.token = t.trim()
     sessionStorage.setItem(KEY, this.token)
     this.open()
+    // Probe, but never re-lock from here. `call` already locks on a real 401;
+    // anything else — storage unbound, quota exhausted, a blip — is not a bad
+    // token, and treating it as one made the panel appear and vanish again
+    // with no way to reach the tools.
     void this.call('stats').then((r) => {
       if (r?.ok) this.host.status(`god mode · ${r.pixels} pixels, ${r.bans} bans`, '')
-      else { this.host.status('bad admin token', 'bad'); this.lock() }
+      else if (this.unlocked) {
+        this.host.status(`god mode · ${r?.error ?? 'storage unavailable'}`, 'warn')
+      }
     })
   }
 
