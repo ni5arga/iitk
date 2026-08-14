@@ -258,6 +258,23 @@ post '{"op":"ban","id":"a1b2c3d4e5"}'                    # id comes from the log
 post '{"op":"unban","id":"a1b2c3d4e5"}'
 ```
 
+### Backing up the canvas
+
+```bash
+node scripts/pixels-backup.mjs dump
+PIXELS_ADMIN_TOKEN=… node scripts/pixels-backup.mjs restore data/backups/pixels-<stamp>.json --yes
+```
+
+`dump` writes every user-painted pixel to `data/backups/` as flat `[x, y, c]`
+triples with the sequence number it was taken at. The seeded art is deliberately
+absent: it is a static file baked at build time, `clearAll` never touches it, and
+including it would double the file for nothing.
+
+`restore` stamps the pixels back through the admin `paint` op, which bypasses
+rate limits. It refuses without `--yes` and prints the row count first — D1 bills
+per row and the free tier allows 100,000 writes a day, so a large canvas will not
+restore in a single day.
+
 `clearAll` only removes user-drawn pixels. The seed is a static file, not
 storage, so the canvas is never left blank.
 
