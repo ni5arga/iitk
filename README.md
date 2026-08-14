@@ -164,8 +164,20 @@ colour, or skip the cooldown.
 | `DISCORD_WEBHOOK` | secret | pixel log; server-side only, never sent to the browser |
 | `PIXELS_ADMIN_TOKEN` | secret | bearer token for the admin route |
 
-Without the KV binding the page still renders the seeded art read-only, so a
-missing binding degrades rather than breaks.
+Without the KV binding the page renders the seeded art **read-only** and the
+status bar says so — a missing binding degrades rather than breaks. That is
+also what `vite preview` shows locally, since it does not run Functions.
+
+Creating the namespace is the one step that cannot be done from this repo:
+
+```bash
+npx wrangler kv namespace create PIXELS      # prints an id
+```
+
+Then in the dashboard: **your Pages project → Settings → Bindings → Add →
+KV namespace**, variable name exactly `PIXELS`, pointing at that namespace.
+Add it to **both** Production and Preview, then redeploy. `/api/pixels` returns
+`503 canvas storage is not configured` until it is bound.
 
 ### Identity and logging
 
