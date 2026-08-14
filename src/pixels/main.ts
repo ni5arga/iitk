@@ -606,7 +606,9 @@ async function start() {
     boot.classList.add('gone')
     updateHint()
     updateBudget()
-    setStatus(live ? `${GRID_W}×${GRID_H} grid · 2 m per pixel · live` : 'read-only preview', live ? '' : 'warn')
+    setStatus(live
+      ? `${painted.size.toLocaleString()} pixels · ${GRID_W}×${GRID_H} grid · live`
+      : 'read-only preview', live ? '' : 'warn')
     draw()
     if (live) pollTimer = setTimeout(poll, POLL_ACTIVE_MS)
   })
