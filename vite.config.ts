@@ -53,8 +53,45 @@ function pixelsGate(): Plugin {
   }
 }
 
+/**
+ * Inline the pixel page's own stylesheet into its HTML.
+ *
+ * Cloudflare has twice now cached an *opaque* variant of a hashed asset: the
+ * response still arrives 200 with the right content-type, but the browser
+ * treats it as cross-origin, so `cssRules` throws SecurityError and not one
+ * declaration applies. The page then renders with the palette and dock
+ * unstyled — present in the DOM, invisible on screen — and curl cannot
+ * reproduce it because curl never asks for the poisoned variant. Purging fixes
+ * it until the next time.
+ *
+ * This stylesheet is ~5 kB. Inlining costs a little repetition between the two
+ * pages and removes the failure mode outright: there is no request left to
+ * poison, and the page cannot paint before its own styles exist. The big
+ * MapLibre stylesheet stays a normal link — it is 80 kB and shared with the map
+ * page, where inlining it would cost more than it saves.
+ */
+function inlinePixelsCss(): Plugin {
+  return {
+    name: 'inline-pixels-css',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const page = bundle['pixels/index.html']
+      if (!page || page.type !== 'asset') return
+      page.source = String(page.source).replace(
+        /<link rel="stylesheet"[^>]*href="\/assets\/(pixels-[^"]+\.css)"[^>]*>/g,
+        (tag, file: string) => {
+          const css = bundle[`assets/${file}`]
+          if (!css || css.type !== 'asset') return tag
+          delete bundle[`assets/${file}`]     // nothing else references it
+          return `<style>${String(css.source).trim()}</style>`
+        },
+      )
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [noCrossorigin(), pixelsGate()],
+  plugins: [noCrossorigin(), pixelsGate(), inlinePixelsCss()],
   server: { port: 5180, open: false },
   build: {
     target: 'es2022',
