@@ -147,6 +147,51 @@ const purpleLong = sprite('purple-long', [
   '...kkkkkkkkkk...',
 ])
 
+// Bocchi. 32 x 40 — 64 m by 80 m on the ground, the largest piece by a wide
+// margin, so it wants an open field rather than a rooftop.
+const bocchi = sprite('bocchi', [
+  "..............kk................",
+  ".............khk................",
+  "............khhk................",
+  "..........kkhhhkk...............",
+  ".......kkkhhhhhhkkk.............",
+  ".....kkhhhhhhhhhhhhkk...........",
+  "....khhhhhhhhhhhhhhhhk..........",
+  "...khhhhhhhhhhhhhhhhhhk.........",
+  "..khhhhhhhhhhhhhhhhhhhhk........",
+  "..khhhhhhhhhhhhhhhhhhhhhk.......",
+  ".khhhhhhhhhhhhhhhhhhhhhhhk......",
+  ".khhhhhhhhhhhhhhhhhhhhhhhhk.....",
+  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
+  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
+  "khhhhhkYYYYYYYYYYYYkhhhhhhhk....",
+  "khhhhkYYYYYYYYYYYYYYkhhhhhhk....",
+  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
+  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
+  "khhhkYkBBkYYYYYYkBBkYkhhhhhk....",
+  "khhhkYkBckYYYYYYkBckYkhhhhhk....",
+  "khhhkYkBBkYYYYYYkBBkYkhhhhhk....",
+  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
+  "khhhkYSYYYYYYYYYYYYSYkhhhhhk....",
+  "khhhkYYYYYYkwwkYYYYYYkhhhhhk....",
+  "khhhhkYYYYYYYYYYYYYYkhhhhhhk....",
+  "khhhhhkYYYYYYYYYYYYkhhhhhhhk....",
+  "khhhhhhkkYYYYYYYYkkhhhhhhhhk....",
+  "khhhhhhhhkkkkkkkkhhhhhhhhhhk....",
+  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
+  ".khhhhhhhhhhhhhhhhhhhhhhhhk.....",
+  ".kffhhhhhhhhhhhhhhhhhhhhffk.....",
+  "..kffhhhhhhhhhhhhhhhhhhfffk.....",
+  "...kkffhhhhhhhhhhhhhhffkk.......",
+  ".....kkkfffhhhhhhfffkkk.........",
+  "........kkkwwwwwwkkk............",
+  ".......khwwwwwwwwwwhk...........",
+  "......khhwwwwwwwwwwhhk..........",
+  ".....khhhwwwwwwwwwwhhhk.........",
+  ".....khhhhwwwwwwwwhhhhk.........",
+  ".....kkkkkkkkkkkkkkkkkk.........",
+])
+
 /* ── pride flags ─────────────────────────────────────────────────────────── */
 
 const FLAGS = [
@@ -169,6 +214,7 @@ const PLACEMENTS = [
   { art: pinkTwintails, at: 'New Lecture Hall Complex', dx: -34, dy: -30 },
   { art: blueBob, at: 'Hall 5 Mess', dx: 26, dy: -34 },
   { art: purpleLong, at: 'P K Kelkar Library', dx: 30, dy: 16 },
+  { art: bocchi, at: 'Pronite Ground', dx: -16, dy: -20, fallback: 'Auditorium Grounds' },
 
   { art: FLAGS[0], at: 'Open Air Theatre', dx: -12, dy: -26 },
   { art: FLAGS[1], at: 'Hall 12 Mess', dx: -12, dy: -28 },
