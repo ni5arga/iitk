@@ -138,6 +138,36 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   }).catch(() => { /* logging must never break painting */ })
 }
 
+/* ── attribution ─────────────────────────────────────────────────────────── */
+
+/**
+ * A bounded record of who painted what, so a moderator can click a pixel and
+ * ban whoever put it there. Deliberately short-lived and capped: it is a
+ * moderation aid, not a history of the canvas.
+ */
+const RECENT_MAX = 600
+
+async function rememberPainter(env: Env, who: string, pixels: Pixel[]) {
+  const raw = await env.PIXELS.get('recent')
+  const list = raw ? (JSON.parse(raw) as [number, number, string, number][]) : []
+  for (const p of pixels) list.push([p.x, p.y, who, Date.now()])
+  if (list.length > RECENT_MAX) list.splice(0, list.length - RECENT_MAX)
+  await env.PIXELS.put('recent', JSON.stringify(list))
+}
+
+async function painterAt(env: Env, x: number, y: number) {
+  const raw = await env.PIXELS.get('recent')
+  if (!raw) return null
+  const list = JSON.parse(raw) as [number, number, string, number][]
+  // Last write wins, so walk backwards.
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i]![0] === x && list[i]![1] === y) {
+      return { id: list[i]![2], at: list[i]![3] }
+    }
+  }
+  return null
+}
+
 /* ── routes ──────────────────────────────────────────────────────────────── */
 
 export const onRequest: PagesFunction<Env> = async (ctx) => {
@@ -212,6 +242,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
     await applyPixels(env, pixels)
     ctx.waitUntil(logPixels(env, who, pixels))
+    ctx.waitUntil(rememberPainter(env, who, pixels))
 
     return json({
       ok: true,
@@ -293,6 +324,21 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         else await env.PIXELS.delete(`ban:${id}`)
         ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${id} `))
         return json({ ok: true, op, id })
+      }
+
+      /* Who painted this pixel — powers click-to-ban in the admin UI. */
+      case 'who': {
+        const x = Number(body.x) | 0, y = Number(body.y) | 0
+        if (!inBounds(x, y)) return json({ error: 'out of bounds' }, 400)
+        const hit = await painterAt(env, x, y)
+        return json({ ok: true, x, y, painter: hit })
+      }
+
+      /* Recent activity feed for the dashboard. */
+      case 'recent': {
+        const raw = await env.PIXELS.get('recent')
+        const list = raw ? (JSON.parse(raw) as [number, number, string, number][]) : []
+        return json({ ok: true, recent: list.slice(-120).reverse() })
       }
 
       case 'bans': {

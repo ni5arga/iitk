@@ -8,6 +8,7 @@ import {
   GRID_W, GRID_H, PALETTE, TRANSPARENT,
   lonLatToPixel, pixelToLonLat, inBounds, unpackChunk,
 } from './grid'
+import { Admin } from './admin'
 
 const base = import.meta.env.BASE_URL
 const boot = document.getElementById('boot')!
@@ -176,7 +177,23 @@ async function start() {
       g.fillRect(pt.x, pt.y, sw + 1, sh + 1)
     }
 
-    if (hover && sw >= 4) {
+    if (dragFrom && dragTo) {
+      const rx0 = Math.min(dragFrom.x, dragTo.x), ry0 = Math.min(dragFrom.y, dragTo.y)
+      const rx1 = Math.max(dragFrom.x, dragTo.x) + 1, ry1 = Math.max(dragFrom.y, dragTo.y) + 1
+      const [lonS, latS] = pixelToLonLat(rx0, ry0)
+      const [lonE, latE] = pixelToLonLat(rx1, ry1)
+      const pA = map.project([lonS, latS])
+      const pB = map.project([lonE, latE])
+      g.fillStyle = 'rgba(255,123,114,.18)'
+      g.fillRect(pA.x, pA.y, pB.x - pA.x, pB.y - pA.y)
+      g.strokeStyle = '#ff7b72'
+      g.setLineDash([5, 4])
+      g.lineWidth = 1.5
+      g.strokeRect(pA.x + .5, pA.y + .5, pB.x - pA.x, pB.y - pA.y)
+      g.setLineDash([])
+    }
+
+    if (hover && sw >= 4 && !dragFrom) {
       const [lon, lat] = pixelToLonLat(hover.x, hover.y)
       const pt = map.project([lon, lat])
       g.strokeStyle = resolved() === 'dark' ? '#ffffff' : '#000000'
@@ -247,6 +264,55 @@ async function start() {
   }
   map.on('zoom', updateHint)
 
+  /* ── god mode ─────────────────────────────────────────────────────────── */
+
+  async function reloadCanvas() {
+    const server = await json<{ chunks: Record<string, string> }>(`${base}api/pixels`)
+    board.fill(0)
+    painted.clear()
+    for (const [x, y, c] of seed.pixels) set(x, y, c)
+    applyChunks(server.chunks)
+    draw()
+  }
+
+  const admin = new Admin({
+    redraw: draw,
+    setLocal: set,
+    reload: reloadCanvas,
+    status: setStatus,
+    currentColour: () => (erasing ? TRANSPARENT : colour),
+  }, base)
+
+  // Rectangle tools drag on the map, so panning has to yield while one is armed.
+  let dragFrom: { x: number; y: number } | null = null
+  let dragTo: { x: number; y: number } | null = null
+  const rectTool = () => admin.unlocked && (admin.tool === 'rect-erase' || admin.tool === 'rect-fill')
+
+  map.on('mousedown', (e) => {
+    if (!rectTool()) return
+    const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
+    if (!inBounds(x, y)) return
+    e.preventDefault()
+    map.dragPan.disable()
+    dragFrom = { x, y }
+    dragTo = { x, y }
+  })
+
+  map.on('mousemove', (e) => {
+    if (!dragFrom) return
+    const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
+    if (inBounds(x, y)) { dragTo = { x, y }; draw() }
+  })
+
+  map.on('mouseup', async () => {
+    if (!dragFrom || !dragTo) return
+    const a = dragFrom, b = dragTo
+    dragFrom = dragTo = null
+    map.dragPan.enable()
+    draw()
+    await admin.applyRect(a.x, a.y, b.x, b.y)
+  })
+
   /** Queue writes so a fast drag becomes one request, not twelve. */
   const queue: { x: number; y: number; c: number }[] = []
   let flushTimer: ReturnType<typeof setTimeout> | undefined
@@ -291,6 +357,17 @@ async function start() {
     const { x, y } = lonLatToPixel(lngLat.lng, lngLat.lat)
     if (!inBounds(x, y)) return
     const c = erasing ? TRANSPARENT : colour
+
+    // God mode writes straight through: no cooldown, no client-side budget.
+    if (admin.unlocked) {
+      if (admin.tool === 'inspect') { void admin.inspect(x, y); return }
+      if (admin.tool !== 'paint') return   // the rectangle tools drag instead
+      set(x, y, c)
+      draw()
+      void admin.paint([[x, y, c]])
+      return
+    }
+
     if (board[idx(x, y)] === c) return
 
     set(x, y, c)                    // optimistic: show it immediately
@@ -299,7 +376,7 @@ async function start() {
     if (!flushTimer) flushTimer = setTimeout(flush, 180)
   }
 
-  map.on('click', (e) => place(e.lngLat))
+  map.on('click', (e) => { if (!rectTool()) place(e.lngLat) })
 
   map.on('mousemove', (e) => {
     const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
