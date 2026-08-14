@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "fetch": "node scripts/fetch-osm.mjs",
-    "build:data": "node scripts/build-data.mjs",
+    "build:data": "node scripts/build-data.mjs && node scripts/build-pixels.mjs",
     "dev": "npm run build:data && vite",
     "build": "npm run build:data && vite build",
     "preview": "vite preview",

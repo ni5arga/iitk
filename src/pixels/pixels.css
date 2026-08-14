@@ -1,0 +1,144 @@
+/* /pixels — canvas overlay, palette dock. Inherits every token from styles.css. */
+
+#pixel-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;      /* the map underneath handles all input */
+  image-rendering: pixelated;
+}
+
+body.pixels #bar { align-items: center; }
+
+#brand-btn {
+  text-decoration: none;
+  flex: none;
+}
+
+#px-status {
+  flex: 1;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-3);
+  text-shadow: 0 0 3px var(--halo), 0 0 7px var(--halo), 0 0 12px var(--halo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#px-status.warn { color: var(--warn, #ffb454); }
+#px-status.bad { color: var(--danger); }
+
+/* Painting is a deliberate act — the crosshair only appears when a click will
+   actually land a pixel. */
+body.can-paint .maplibregl-canvas { cursor: crosshair; }
+
+#px-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  padding: 9px 15px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  box-shadow: var(--lift);
+  font-size: 13px;
+  color: var(--fg-2);
+  pointer-events: none;
+}
+#px-hint[hidden] { display: none; }
+
+/* ── palette dock ────────────────────────────────────────────────────────── */
+
+#px-dock {
+  position: fixed;
+  left: var(--pad);
+  right: var(--pad);
+  bottom: var(--pad);
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#px-palette {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 3px;
+  padding: 7px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  box-shadow: var(--lift);
+  max-width: min(560px, 100%);
+}
+
+.sw {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(128, 128, 128, .35);
+  cursor: pointer;
+  padding: 0;
+}
+.sw[aria-checked="true"] {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+/* The eraser reads as a checkerboard — the universal "nothing here" swatch. */
+.sw-erase {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #9aa4b2 25%, transparent 25%, transparent 75%, #9aa4b2 75%),
+    linear-gradient(45deg, #9aa4b2 25%, transparent 25%, transparent 75%, #9aa4b2 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 5px 5px;
+}
+
+#px-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 11px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: 12px;
+  color: var(--fg-2);
+}
+#px-erase {
+  padding: 4px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  color: var(--fg-2);
+  font-size: 12px;
+}
+#px-erase[aria-pressed="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+#px-budget { font-family: var(--mono); font-size: 11px; color: var(--fg-3); min-width: 9ch; text-align: center; }
+#px-src { color: var(--fg-3); text-decoration: none; }
+#px-src:hover { color: var(--accent); }
+
+/* Sits inside the actions bar, so it needs no surface of its own — unlike the
+   map page, where the byline floats directly over the tiles. */
+#px-actions .by { color: var(--fg-3); white-space: nowrap; }
+#px-actions .by a {
+  color: var(--fg-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-2);
+}
+#px-actions .by a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+@media (max-width: 420px) {
+  #px-actions .by { display: none; }
+}
+
+@media (max-width: 760px), (pointer: coarse) and (max-width: 900px) {
+  #px-palette { grid-template-columns: repeat(8, 1fr); }
+  .sw { width: 30px; height: 30px; }   /* thumb-sized */
+  #px-dock { gap: 6px; bottom: calc(var(--pad) + env(safe-area-inset-bottom)); }
+  #px-status { font-size: 10px; }
+}

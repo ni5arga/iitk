@@ -143,6 +143,71 @@ stops matching. Coordinates must come from an actual survey; nothing invented.
 For code changes/features/suggustions, feel free to make an issue or a pull request in this repo - if I somehow miss it, please do not
 hesitate to tag me in the issue/PR thread. 
 
+## Pixels
+
+`/pixels` is a shared canvas laid over the campus: a fixed grid at **2 m per
+pixel**, 1495 × 1503 cells, painted by anyone who turns up. Seeded with pride
+flags and a few chibi characters anchored to real buildings.
+
+Open to everyone — no login. Abuse is handled by **rate limiting per IP**:
+30 pixels, then a 60-second cooldown, and at most 12 pixels per request.
+
+The client is not trusted. Position, colour index and budget are all re-checked
+server-side, so a crafted request cannot paint outside the grid, invent a
+colour, or skip the cooldown.
+
+### Setup on Cloudflare Pages
+
+| Binding | Type | Purpose |
+|---|---|---|
+| `PIXELS` | KV namespace | canvas chunks, rate limits, bans, log buffer |
+| `DISCORD_WEBHOOK` | secret | pixel log; server-side only, never sent to the browser |
+| `PIXELS_ADMIN_TOKEN` | secret | bearer token for the admin route |
+
+Without the KV binding the page still renders the seeded art read-only, so a
+missing binding degrades rather than breaks.
+
+### Identity and logging
+
+We never store or log an IP address. Rate limits, bans and the Discord log all
+key off a 10-character hash of it — enough to moderate with, useless for
+identifying anyone off-platform.
+
+Pixels are logged in batches of 25 rather than one message each: a Discord
+webhook is limited to a handful of posts per second, and per-pixel messages
+would be throttled into uselessness the moment two people drew at once.
+
+### Moderation
+
+```bash
+T=your-admin-token
+A=https://iitk.nis.pet/api/pixels/admin
+post() { curl -s -X POST "$A" -H "authorization: Bearer $T" -H 'content-type: application/json' -d "$1"; }
+
+post '{"op":"stats"}'                                    # counts
+post '{"op":"clearRect","x":700,"y":800,"w":40,"h":40}'  # erase a region
+post '{"op":"fillRect","x":700,"y":800,"w":40,"h":40,"c":5}'
+post '{"op":"paint","pixels":[[700,800,8],[701,800,8]]}' # stamp art over it
+post '{"op":"clearAll"}'                                 # wipe user pixels
+post '{"op":"bans"}'                                     # list
+post '{"op":"ban","id":"a1b2c3d4e5"}'                    # id comes from the log
+post '{"op":"unban","id":"a1b2c3d4e5"}'
+```
+
+`clearAll` only removes user-drawn pixels. The seed is a static file, not
+storage, so the canvas is never left blank.
+
+### Editing the seed
+
+Sprites live in `scripts/build-pixels.mjs` as rows of characters, one per
+colour, and are validated for a clean rectangle at build time. `npm run
+build:data` re-bakes `public/data/pixels-seed.json`.
+
+**Known limit:** KV is eventually consistent and has no transactions, so two
+people painting the same 128 × 128 chunk within the same second can lose one
+write. Acceptable for a campus toy; a Durable Object per chunk is the fix if it
+ever gets busy.
+
 ## Deploying
 
 Cloudflare Pages, building from the Git integration:
@@ -150,6 +215,8 @@ Cloudflare Pages, building from the Git integration:
 - Build command `npm run build`
 - Output directory `dist`
 - Node version from `.nvmrc` (22)
+- `functions/` is picked up automatically as Pages Functions — see Pixels above
+  for the bindings it needs
 
 `.github/workflows/ci.yml` typechecks, smoke-tests and builds every push and PR.
 `.github/workflows/refresh-data.yml` re-pulls all sources weekly and opens a PR
