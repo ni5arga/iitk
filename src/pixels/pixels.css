@@ -66,7 +66,9 @@ body.can-paint .maplibregl-canvas { cursor: crosshair; }
 
 #px-palette {
   display: grid;
-  grid-template-columns: repeat(16, 1fr);
+  /* 33 swatches — eraser plus 32 colours — so 11 columns lands exactly three
+     full rows instead of leaving an orphan on a fourth. */
+  grid-template-columns: repeat(11, 1fr);
   gap: 3px;
   padding: 7px;
   background: var(--bg-1);
@@ -137,8 +139,8 @@ body.can-paint .maplibregl-canvas { cursor: crosshair; }
 }
 
 @media (max-width: 760px), (pointer: coarse) and (max-width: 900px) {
-  #px-palette { grid-template-columns: repeat(8, 1fr); }
-  .sw { width: 30px; height: 30px; }   /* thumb-sized */
+  #px-palette { grid-template-columns: repeat(11, 1fr); gap: 2px; padding: 6px; }
+  .sw { width: 28px; height: 28px; }   /* thumb-sized, 11 across still fits 360px */
   #px-dock { gap: 6px; bottom: calc(var(--pad) + env(safe-area-inset-bottom)); }
   #px-status { font-size: 10px; }
 }

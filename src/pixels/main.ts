@@ -85,6 +85,39 @@ async function start() {
   ;(window as unknown as { __map: maplibregl.Map }).__map = map
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
 
+  /* ── place labels ─────────────────────────────────────────────────────── */
+  // Without these the canvas floats over an anonymous grey map and nobody can
+  // tell which building they are painting on. Markers are dimmed so the
+  // artwork stays the loudest thing on screen.
+  function labelFeatures(): GeoJSON.FeatureCollection {
+    return {
+      type: 'FeatureCollection',
+      features: campus.pois
+        .filter((p) => !p.unnamed)
+        .map((p) => ({
+          type: 'Feature' as const,
+          id: p.id,
+          properties: {
+            id: p.id,
+            name: p.name,
+            cat: p.cat,
+            color: campus.categories[p.cat]?.color ?? '#8b949e',
+            pin: !!campus.categories[p.cat]?.pin,
+            named: true,
+            focus: false,
+          },
+          geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] },
+        })),
+    }
+  }
+
+  function fillLabels() {
+    const src = map.getSource('pois') as maplibregl.GeoJSONSource | undefined
+    src?.setData(labelFeatures())
+    if (map.getLayer('poi-dot')) map.setPaintProperty('poi-dot', 'circle-opacity', 0.35)
+    if (map.getLayer('poi-dot')) map.setPaintProperty('poi-dot', 'circle-stroke-width', 0.8)
+  }
+
   /* ── canvas overlay ───────────────────────────────────────────────────── */
 
   const cv = document.getElementById('pixel-canvas') as HTMLCanvasElement
@@ -282,10 +315,11 @@ async function start() {
   themeBtn.addEventListener('click', () => { toggleTheme(); paintTheme() })
   onThemeChange((t) => {
     map.setStyle(buildStyle(geo, campus, t, base))
-    map.once('styledata', draw)
+    map.once('styledata', () => { fillLabels(); draw() })
   })
 
   map.on('load', () => {
+    fillLabels()
     boot.classList.add('gone')
     updateHint()
     updateBudget()

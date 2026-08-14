@@ -18,6 +18,23 @@
 /data/*
   Cache-Control: public, max-age=600, must-revalidate
 
+# HTML must never be cached. Asset filenames are content-hashed, so a stale
+# index.html points at hashes that no longer exist — and Cloudflare answers a
+# missing asset with the SPA fallback, so the browser gets HTML where it wanted
+# JavaScript and dies on "Unexpected token '<'". Revalidating the entry points
+# keeps markup and assets from ever drifting apart.
+/
+  Cache-Control: no-cache, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/pixels/
+  Cache-Control: no-cache, must-revalidate
+
+/pixels/index.html
+  Cache-Control: no-cache, must-revalidate
+
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
