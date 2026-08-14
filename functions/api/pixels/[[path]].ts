@@ -26,10 +26,17 @@
 import { CHUNK, GRID_W, GRID_H, PALETTE, chunkOf, inBounds, type Pixel } from '../../../src/pixels/grid'
 
 interface Env {
-  DB: D1Database
+  /** Preferred binding name. */
+  DB?: D1Database
+  /** What `wrangler d1 create iitk-pixels` suggests by default — accepted so a
+   *  copy-pasted binding name does not silently 503. */
+  iitk_pixels?: D1Database
   DISCORD_WEBHOOK?: string
   PIXELS_ADMIN_TOKEN?: string
 }
+
+/** The bound database, whichever name it went in under. */
+const database = (env: Env) => env.DB ?? env.iitk_pixels
 
 /** Pixels allowed before a forced break, and how long that break lasts. */
 const BURST = 30
@@ -47,29 +54,29 @@ const json = (body: unknown, status = 200, extra: HeadersInit = {}) =>
 // Created on demand, so deploying needs only the binding and no migration step.
 
 let ready = false
-async function ensureSchema(env: Env) {
+async function ensureSchema(db: D1Database) {
   if (ready) return
-  await env.DB.batch([
-    env.DB.prepare(`CREATE TABLE IF NOT EXISTS pixels (
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS pixels (
       x INTEGER NOT NULL, y INTEGER NOT NULL, c INTEGER NOT NULL,
       seq INTEGER NOT NULL, painter TEXT, at INTEGER,
       PRIMARY KEY (x, y))`),
     // The live feed is "rows above a sequence number", so this index is what
     // keeps polling cheap instead of a table scan.
-    env.DB.prepare('CREATE INDEX IF NOT EXISTS pixels_seq ON pixels(seq)'),
-    env.DB.prepare('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)'),
-    env.DB.prepare('CREATE TABLE IF NOT EXISTS bans (id TEXT PRIMARY KEY, at INTEGER)'),
-    env.DB.prepare('CREATE TABLE IF NOT EXISTS limits (id TEXT PRIMARY KEY, n INTEGER, until INTEGER)'),
+    db.prepare('CREATE INDEX IF NOT EXISTS pixels_seq ON pixels(seq)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS bans (id TEXT PRIMARY KEY, at INTEGER)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS limits (id TEXT PRIMARY KEY, n INTEGER, until INTEGER)'),
   ])
   ready = true
 }
 
 const getMeta = async (env: Env, k: string, fallback = '0') => {
-  const row = await env.DB.prepare('SELECT v FROM meta WHERE k = ?').bind(k).first<{ v: string }>()
+  const row = await env.DB!.prepare('SELECT v FROM meta WHERE k = ?').bind(k).first<{ v: string }>()
   return row?.v ?? fallback
 }
 const setMeta = (env: Env, k: string, v: string) =>
-  env.DB.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v')
+  env.DB!.prepare('INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v')
     .bind(k, v)
 
 /* ── identity ────────────────────────────────────────────────────────────── */
@@ -90,7 +97,7 @@ async function painterId(req: Request): Promise<string> {
 
 /** Chunked exactly as before, so this migration is invisible to the client. */
 async function readCanvas(env: Env) {
-  const { results } = await env.DB.prepare('SELECT x, y, c FROM pixels').all<Pixel>()
+  const { results } = await env.DB!.prepare('SELECT x, y, c FROM pixels').all<Pixel>()
   const grouped: Record<string, number[]> = {}
   for (const p of results) {
     const { cx, cy } = chunkOf(p.x, p.y)
@@ -106,13 +113,13 @@ async function readCanvas(env: Env) {
  * half a stroke. Colour 0 deletes rather than storing a transparent row.
  */
 async function applyPixels(env: Env, pixels: Pixel[], painter: string) {
-  const seq = Number(await getMeta(env, 'seq')) + 1
+  const seq = Number(await getMeta(e, 'seq')) + 1
   const now = Date.now()
   const stmts: D1PreparedStatement[] = []
   for (const p of pixels) {
     stmts.push(p.c === 0
-      ? env.DB.prepare('DELETE FROM pixels WHERE x = ? AND y = ?').bind(p.x, p.y)
-      : env.DB.prepare(
+      ? env.DB!.prepare('DELETE FROM pixels WHERE x = ? AND y = ?').bind(p.x, p.y)
+      : env.DB!.prepare(
           `INSERT INTO pixels (x, y, c, seq, painter, at) VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT(x, y) DO UPDATE SET
              c = excluded.c, seq = excluded.seq, painter = excluded.painter, at = excluded.at`,
@@ -122,10 +129,10 @@ async function applyPixels(env: Env, pixels: Pixel[], painter: string) {
   // separately — otherwise rubbed-out pixels never disappear for anyone else.
   const erased = pixels.filter((p) => p.c === 0)
   if (erased.length) {
-    stmts.push(setMeta(env, 'erased', JSON.stringify({ seq, px: erased.map((p) => [p.x, p.y]) })))
+    stmts.push(setMeta(e, 'erased', JSON.stringify({ seq, px: erased.map((p) => [p.x, p.y]) })))
   }
-  stmts.push(setMeta(env, 'seq', String(seq)))
-  await env.DB.batch(stmts)
+  stmts.push(setMeta(e, 'seq', String(seq)))
+  await env.DB!.batch(stmts)
 }
 
 /* ── discord logging ─────────────────────────────────────────────────────── */
@@ -140,7 +147,7 @@ const LOG_MAX_AGE_MS = 45_000
 
 async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   if (!env.DISCORD_WEBHOOK) return
-  const raw = await getMeta(env, 'logbuf', '')
+  const raw = await getMeta(e, 'logbuf', '')
   const buf = raw ? JSON.parse(raw) as { t: number; lines: string[] } : { t: Date.now(), lines: [] }
   for (const p of pixels) {
     buf.lines.push(`\`${who}\` ${note}(${p.x},${p.y}) ${p.c === 0 ? 'erase' : PALETTE[p.c]}`)
@@ -148,12 +155,12 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   if (!pixels.length && note) buf.lines.push(`\`${who}\` ${note}`)
 
   if (buf.lines.length < LOG_FLUSH_AT && Date.now() - buf.t <= LOG_MAX_AGE_MS) {
-    await setMeta(env, 'logbuf', JSON.stringify(buf)).run()
+    await setMeta(e, 'logbuf', JSON.stringify(buf)).run()
     return
   }
 
   const lines = buf.lines.splice(0, 60)
-  await setMeta(env, 'logbuf', JSON.stringify({ t: Date.now(), lines: buf.lines })).run()
+  await setMeta(e, 'logbuf', JSON.stringify({ t: Date.now(), lines: buf.lines })).run()
   await fetch(env.DISCORD_WEBHOOK, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -175,17 +182,21 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   const { request, env } = ctx
   const path = (ctx.params.path as string[] | undefined)?.join('/') ?? ''
 
-  if (!env.DB) {
+  const db = database(env)
+  if (!db) {
     return json({
       error: 'canvas storage is not configured — bind a D1 database as DB on this Pages project',
     }, 503)
   }
-  await ensureSchema(env)
+  await ensureSchema(db)
+  // Helpers still take `env`; give them the resolved handle under the name
+  // they expect rather than threading a parameter through every call site.
+  const e = { ...env, DB: db } as Env & { DB: D1Database }
 
   /* GET /api/pixels */
   if (request.method === 'GET' && path === '') {
     const [chunks, seq, epoch] = await Promise.all([
-      readCanvas(env), getMeta(env, 'seq'), getMeta(env, 'epoch'),
+      readCanvas(e), getMeta(e, 'seq'), getMeta(e, 'epoch'),
     ])
     return json({
       grid: { w: GRID_W, h: GRID_H, chunk: CHUNK },
@@ -198,8 +209,8 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   if (request.method === 'GET' && path === 'since') {
     const since = Number(new URL(request.url).searchParams.get('seq') ?? 0)
     const [rows, head, epoch, erasedRaw] = await Promise.all([
-      env.DB.prepare('SELECT x, y, c FROM pixels WHERE seq > ? LIMIT 4000').bind(since).all<Pixel>(),
-      getMeta(env, 'seq'), getMeta(env, 'epoch'), getMeta(env, 'erased', ''),
+      e.DB.prepare('SELECT x, y, c FROM pixels WHERE seq > ? LIMIT 4000').bind(since).all<Pixel>(),
+      getMeta(e, 'seq'), getMeta(e, 'epoch'), getMeta(e, 'erased', ''),
     ])
     const pixels: [number, number, number][] = rows.results.map((p) => [p.x, p.y, p.c])
     if (erasedRaw) {
@@ -213,7 +224,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   if (request.method === 'POST' && path === 'paint') {
     const who = await painterId(request)
 
-    const banned = await env.DB.prepare('SELECT 1 FROM bans WHERE id = ?').bind(who).first()
+    const banned = await e.DB.prepare('SELECT 1 FROM bans WHERE id = ?').bind(who).first()
     if (banned) return json({ error: 'You are banned from painting.', id: who }, 403)
 
     let body: { pixels?: [number, number, number][] }
@@ -238,7 +249,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     }
 
     const now = Date.now()
-    const rl = await env.DB.prepare('SELECT n, until FROM limits WHERE id = ?')
+    const rl = await e.DB.prepare('SELECT n, until FROM limits WHERE id = ?')
       .bind(who).first<{ n: number; until: number }>() ?? { n: 0, until: 0 }
 
     if (rl.until > now) {
@@ -255,13 +266,13 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
     const n = rl.n + pixels.length
     const until = n >= BURST ? now + COOLDOWN_S * 1000 : 0
-    await env.DB.prepare(
+    await e.DB.prepare(
       `INSERT INTO limits (id, n, until) VALUES (?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET n = excluded.n, until = excluded.until`,
     ).bind(who, n, until).run()
 
-    await applyPixels(env, pixels, who)
-    ctx.waitUntil(logPixels(env, who, pixels))
+    await applyPixels(e, pixels, who)
+    ctx.waitUntil(logPixels(e, who, pixels))
 
     return json({
       ok: true, painted: pixels.length,
@@ -293,12 +304,12 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
         if (op === 'clearRect') {
           // One statement rather than up to 40,000 individual row writes.
-          const seq = Number(await getMeta(env, 'seq')) + 1
-          await env.DB.batch([
-            env.DB.prepare('DELETE FROM pixels WHERE x >= ? AND x < ? AND y >= ? AND y < ?')
+          const seq = Number(await getMeta(e, 'seq')) + 1
+          await e.DB.batch([
+            e.DB.prepare('DELETE FROM pixels WHERE x >= ? AND x < ? AND y >= ? AND y < ?')
               .bind(x, x + w, y, y + h),
-            setMeta(env, 'epoch', String(Date.now())),   // a bulk erase is not a diff
-            setMeta(env, 'seq', String(seq)),
+            setMeta(e, 'epoch', String(Date.now())),   // a bulk erase is not a diff
+            setMeta(e, 'seq', String(seq)),
           ])
         } else {
           const px: Pixel[] = []
@@ -307,9 +318,9 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
               if (inBounds(x + dx, y + dy)) px.push({ x: x + dx, y: y + dy, c })
             }
           }
-          for (let i = 0; i < px.length; i += 500) await applyPixels(env, px.slice(i, i + 500), 'ADMIN')
+          for (let i = 0; i < px.length; i += 500) await applyPixels(e, px.slice(i, i + 500), 'ADMIN')
         }
-        ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${w}x${h} at ${x},${y}`))
+        ctx.waitUntil(logPixels(e, 'ADMIN', [], `${op} ${w}x${h} at ${x},${y}`))
         return json({ ok: true, op, affected: w * h })
       }
 
@@ -321,20 +332,20 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         for (const [x, y, c] of raw) {
           if (inBounds(x, y) && c >= 0 && c < PALETTE.length) px.push({ x, y, c })
         }
-        for (let i = 0; i < px.length; i += 500) await applyPixels(env, px.slice(i, i + 500), 'ADMIN')
-        ctx.waitUntil(logPixels(env, 'ADMIN', px.slice(0, 5), 'stamp '))
+        for (let i = 0; i < px.length; i += 500) await applyPixels(e, px.slice(i, i + 500), 'ADMIN')
+        ctx.waitUntil(logPixels(e, 'ADMIN', px.slice(0, 5), 'stamp '))
         return json({ ok: true, op, affected: px.length })
       }
 
       /* Wipe every user-drawn pixel. The seeded art is a static file, not
          storage, so the canvas is never left blank. */
       case 'clearAll': {
-        await env.DB.batch([
-          env.DB.prepare('DELETE FROM pixels'),
-          setMeta(env, 'epoch', String(Date.now())),
-          setMeta(env, 'erased', ''),
+        await e.DB.batch([
+          e.DB.prepare('DELETE FROM pixels'),
+          setMeta(e, 'epoch', String(Date.now())),
+          setMeta(e, 'erased', ''),
         ])
-        ctx.waitUntil(logPixels(env, 'ADMIN', [], 'cleared the whole canvas'))
+        ctx.waitUntil(logPixels(e, 'ADMIN', [], 'cleared the whole canvas'))
         return json({ ok: true, op })
       }
 
@@ -343,14 +354,14 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         const id = String(body.id ?? '').trim()
         if (!/^[0-9a-f]{10}$/.test(id)) return json({ error: 'id must be the 10-char painter id' }, 400)
         await (op === 'ban'
-          ? env.DB.prepare('INSERT OR REPLACE INTO bans (id, at) VALUES (?, ?)').bind(id, Date.now())
-          : env.DB.prepare('DELETE FROM bans WHERE id = ?').bind(id)).run()
-        ctx.waitUntil(logPixels(env, 'ADMIN', [], `${op} ${id}`))
+          ? e.DB.prepare('INSERT OR REPLACE INTO bans (id, at) VALUES (?, ?)').bind(id, Date.now())
+          : e.DB.prepare('DELETE FROM bans WHERE id = ?').bind(id)).run()
+        ctx.waitUntil(logPixels(e, 'ADMIN', [], `${op} ${id}`))
         return json({ ok: true, op, id })
       }
 
       case 'bans': {
-        const { results } = await env.DB.prepare('SELECT id FROM bans').all<{ id: string }>()
+        const { results } = await e.DB.prepare('SELECT id FROM bans').all<{ id: string }>()
         return json({ ok: true, bans: results.map((r) => r.id) })
       }
 
@@ -359,21 +370,21 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
       case 'who': {
         const x = Number(body.x) | 0, y = Number(body.y) | 0
         if (!inBounds(x, y)) return json({ error: 'out of bounds' }, 400)
-        const row = await env.DB.prepare('SELECT painter, at FROM pixels WHERE x = ? AND y = ?')
+        const row = await e.DB.prepare('SELECT painter, at FROM pixels WHERE x = ? AND y = ?')
           .bind(x, y).first<{ painter: string; at: number }>()
         return json({ ok: true, x, y, painter: row ? { id: row.painter, at: row.at } : null })
       }
 
       case 'recent': {
-        const { results } = await env.DB.prepare(
+        const { results } = await e.DB.prepare(
           'SELECT x, y, painter, at FROM pixels ORDER BY at DESC LIMIT 120').all()
         return json({ ok: true, recent: results })
       }
 
       case 'stats': {
         const [px, bans] = await Promise.all([
-          env.DB.prepare('SELECT COUNT(*) AS n FROM pixels').first<{ n: number }>(),
-          env.DB.prepare('SELECT COUNT(*) AS n FROM bans').first<{ n: number }>(),
+          e.DB.prepare('SELECT COUNT(*) AS n FROM pixels').first<{ n: number }>(),
+          e.DB.prepare('SELECT COUNT(*) AS n FROM bans').first<{ n: number }>(),
         ])
         return json({ ok: true, pixels: px?.n ?? 0, bans: bans?.n ?? 0, chunks: 0 })
       }

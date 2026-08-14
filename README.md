@@ -183,9 +183,13 @@ npx wrangler d1 create iitk-pixels     # prints a database id
 ```
 
 Then in the dashboard: **your Pages project → Settings → Bindings → Add →
-D1 database**, variable name exactly `DB`, pointing at that database. Add it to
-**both** Production and Preview, then redeploy. `/api/pixels` returns
-`503 canvas storage is not configured` until it is bound.
+D1 database**, pointing at that database, on **both** Production and Preview.
+
+Name the variable `DB`. `iitk_pixels` — the name `wrangler d1 create` suggests
+— is accepted too, so a copy-pasted binding does not silently 503.
+
+`/api/pixels` returns `503 canvas storage is not configured` until one of those
+is bound.
 
 Tables are created on first request, so there is no migration step.
 
