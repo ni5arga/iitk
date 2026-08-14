@@ -11,12 +11,14 @@
     "dev": "npm run build:data && vite",
     "build": "npm run build:data && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.functions.json",
     "smoke": "node scripts/smoke.mjs",
     "test": "npm run typecheck && npm run build:data && npm run smoke",
-    "verify": "node scripts/verify-browser.mjs"
+    "verify": "node scripts/verify-browser.mjs",
+    "build:pixels": "PIXELS=1 npm run build"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260814.1",
     "puppeteer-core": "^23.11.1",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",

@@ -145,6 +145,13 @@ hesitate to tag me in the issue/PR thread.
 
 ## Pixels
 
+> **Under development — not deployed.** The canvas is excluded from the
+> production build and there is no link to it from the map; `/pixels` redirects
+> to the homepage. Painting was throwing a `ReferenceError` server-side on every
+> request (Cloudflare error 1101), so the board stayed empty no matter what
+> anyone drew. That is fixed, but it stays off public view until the rest of the
+> work below lands. Run it locally with `PIXELS=1 npm run dev`.
+
 `/pixels` is a shared canvas laid over the campus: a fixed grid at **2 m per
 pixel**, 1495 × 1503 cells, painted by anyone who turns up. Seeded with pride
 flags and a few chibi characters anchored to real buildings.

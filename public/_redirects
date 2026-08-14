@@ -1,0 +1,8 @@
+# The pixel canvas is under development and off public view.
+#
+# It is excluded from the production build (see `withPixels` in vite.config.ts),
+# so nothing is served at /pixels/. Redirect rather than 404 so existing links
+# land somewhere useful. To put it back: build with PIXELS=1 and delete these
+# two rules.
+/pixels     /  302
+/pixels/*   /  302

@@ -113,7 +113,7 @@ async function readCanvas(env: Env) {
  * half a stroke. Colour 0 deletes rather than storing a transparent row.
  */
 async function applyPixels(env: Env, pixels: Pixel[], painter: string) {
-  const seq = Number(await getMeta(e, 'seq')) + 1
+  const seq = Number(await getMeta(env, 'seq')) + 1
   const now = Date.now()
   const stmts: D1PreparedStatement[] = []
   for (const p of pixels) {
@@ -129,9 +129,9 @@ async function applyPixels(env: Env, pixels: Pixel[], painter: string) {
   // separately — otherwise rubbed-out pixels never disappear for anyone else.
   const erased = pixels.filter((p) => p.c === 0)
   if (erased.length) {
-    stmts.push(setMeta(e, 'erased', JSON.stringify({ seq, px: erased.map((p) => [p.x, p.y]) })))
+    stmts.push(setMeta(env, 'erased', JSON.stringify({ seq, px: erased.map((p) => [p.x, p.y]) })))
   }
-  stmts.push(setMeta(e, 'seq', String(seq)))
+  stmts.push(setMeta(env, 'seq', String(seq)))
   await env.DB!.batch(stmts)
 }
 
@@ -147,7 +147,7 @@ const LOG_MAX_AGE_MS = 45_000
 
 async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   if (!env.DISCORD_WEBHOOK) return
-  const raw = await getMeta(e, 'logbuf', '')
+  const raw = await getMeta(env, 'logbuf', '')
   const buf = raw ? JSON.parse(raw) as { t: number; lines: string[] } : { t: Date.now(), lines: [] }
   for (const p of pixels) {
     buf.lines.push(`\`${who}\` ${note}(${p.x},${p.y}) ${p.c === 0 ? 'erase' : PALETTE[p.c]}`)
@@ -155,12 +155,12 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   if (!pixels.length && note) buf.lines.push(`\`${who}\` ${note}`)
 
   if (buf.lines.length < LOG_FLUSH_AT && Date.now() - buf.t <= LOG_MAX_AGE_MS) {
-    await setMeta(e, 'logbuf', JSON.stringify(buf)).run()
+    await setMeta(env, 'logbuf', JSON.stringify(buf)).run()
     return
   }
 
   const lines = buf.lines.splice(0, 60)
-  await setMeta(e, 'logbuf', JSON.stringify({ t: Date.now(), lines: buf.lines })).run()
+  await setMeta(env, 'logbuf', JSON.stringify({ t: Date.now(), lines: buf.lines })).run()
   await fetch(env.DISCORD_WEBHOOK, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

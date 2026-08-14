@@ -1,0 +1,21 @@
+{
+  // Pages Functions are bundled by Cloudflare with esbuild, which strips types
+  // without checking them. The main tsconfig only includes "src", so this file
+  // was never typechecked — and an out-of-scope `e` shipped, throwing a
+  // ReferenceError on every paint (Cloudflare 1101) until it was caught by
+  // hand. Wired into `npm test` so that cannot happen again.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["functions", "src/pixels/grid.ts"]
+}
