@@ -144,3 +144,64 @@ body.can-paint .maplibregl-canvas { cursor: crosshair; }
   #px-dock { gap: 6px; bottom: calc(var(--pad) + env(safe-area-inset-bottom)); }
   #px-status { font-size: 10px; }
 }
+
+/* ── god mode ────────────────────────────────────────────────────────────── */
+/* Deliberately red and always visible: forgetting you are in god mode and
+   wiping the canvas by accident should be hard. */
+
+#px-admin {
+  position: fixed;
+  top: calc(var(--pad) + 40px);
+  right: var(--pad);
+  z-index: 9;
+  width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  background: var(--bg-1);
+  border: 1px solid var(--danger);
+  border-radius: 7px;
+  box-shadow: var(--lift);
+  font-size: 12px;
+}
+#px-admin[hidden] { display: none; }
+
+body.admin::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  border: 2px solid var(--danger);
+}
+
+.ad-head { display: flex; align-items: center; justify-content: space-between; }
+.ad-head b { color: var(--danger); letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
+
+#px-admin button {
+  padding: 5px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  color: var(--fg-2);
+  font-size: 11.5px;
+}
+#px-admin button:hover { color: var(--fg); border-color: var(--fg-3); }
+#px-admin button[aria-checked="true"] { color: var(--bg); background: var(--fg); border-color: var(--fg); }
+#px-admin button.danger { color: var(--danger); border-color: var(--danger); }
+#px-admin button.danger:hover { color: #fff; background: var(--danger); }
+
+.ad-tools, .ad-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ad-out { display: grid; gap: 5px; }
+.ad-out code {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--fg-2);
+  word-break: break-all;
+}
+.ad-ban { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.ad-ban span { font-size: 10px; color: var(--fg-3); }
+
+@media (max-width: 760px) {
+  #px-admin { left: var(--pad); right: var(--pad); width: auto; }
+}
