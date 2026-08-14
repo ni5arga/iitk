@@ -147,7 +147,15 @@ body.can-paint .maplibregl-canvas { cursor: crosshair; }
 
 /* ── god mode ────────────────────────────────────────────────────────────── */
 /* Deliberately red and always visible: forgetting you are in god mode and
-   wiping the canvas by accident should be hard. */
+   wiping the canvas by accident should be hard.
+
+   The `gm-` prefix is not cosmetic. These were `ad-head`, `ad-row`, `ad-out`
+   ("admin"), and every ad blocker's cosmetic filter list hides elements whose
+   class starts with `ad-`. The markup was all there — the panel measured 933
+   characters — but Stats, Wipe all and Import image were struck out by an
+   injected `display: none !important`, leaving only `ad-tools`, which happens
+   not to be on those lists. It reproduced in no headless browser, because
+   headless has no extensions. Do not reintroduce an `ad-` prefix. */
 
 #px-admin {
   position: fixed;
@@ -182,8 +190,8 @@ body.admin::after {
   border: 2px solid var(--danger);
 }
 
-.ad-head { display: flex; align-items: center; justify-content: space-between; }
-.ad-head b { color: var(--danger); letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
+.gm-head { display: flex; align-items: center; justify-content: space-between; }
+.gm-head b { color: var(--danger); letter-spacing: .04em; text-transform: uppercase; font-size: 11px; }
 
 #px-admin button {
   padding: 5px 8px;
@@ -197,22 +205,22 @@ body.admin::after {
 #px-admin button.danger { color: var(--danger); border-color: var(--danger); }
 #px-admin button.danger:hover { color: #fff; background: var(--danger); }
 
-.ad-tools, .ad-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-.ad-out { display: grid; gap: 5px; }
-.ad-out code {
+.gm-tools, .gm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.gm-out { display: grid; gap: 5px; }
+.gm-out code {
   font-family: var(--mono);
   font-size: 10.5px;
   color: var(--fg-2);
   word-break: break-all;
 }
-.ad-ban { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.ad-ban span { font-size: 10px; color: var(--fg-3); }
+.gm-ban { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.gm-ban span { font-size: 10px; color: var(--fg-3); }
 
 /* Campus IP whitelist editor. */
-.ad-ip { display: grid; gap: 6px; }
-.ad-ip label { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; }
-.ad-ip label.ad-check { justify-content: flex-start; }
-.ad-ip input[type="number"] {
+.gm-ip { display: grid; gap: 6px; }
+.gm-ip label { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; }
+.gm-ip label.gm-check { justify-content: flex-start; }
+.gm-ip input[type="number"] {
   width: 74px;
   padding: 3px 5px;
   border: 1px solid var(--line-2);
@@ -221,7 +229,7 @@ body.admin::after {
   color: var(--fg);
   font-size: 11px;
 }
-.ad-ip textarea {
+.gm-ip textarea {
   width: 100%;
   padding: 5px 6px;
   border: 1px solid var(--line-2);
@@ -236,7 +244,7 @@ body.admin::after {
   white-space: pre;
   overflow-x: auto;
 }
-.ad-ip .ad-meta { font-size: 10px; color: var(--fg-3); }
+.gm-ip .gm-meta { font-size: 10px; color: var(--fg-3); }
 #px-admin button.go { color: var(--accent); border-color: var(--accent); }
 
 @media (max-width: 760px) {

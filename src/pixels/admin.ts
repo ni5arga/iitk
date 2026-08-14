@@ -143,30 +143,30 @@ export class Admin {
 
   private render(extra = '') {
     this.panel.innerHTML = `
-      <div class="ad-head">
+      <div class="gm-head">
         <b>god mode</b>
         <button data-act="lock" title="Lock (Ctrl+Shift+A)">lock</button>
       </div>
-      <div class="ad-tools" role="radiogroup" aria-label="Tool">
+      <div class="gm-tools" role="radiogroup" aria-label="Tool">
         ${(['paint', 'rect-erase', 'rect-fill', 'inspect'] as Tool[]).map((t) =>
           `<button data-tool="${t}" aria-checked="${this.tool === t}" role="radio">${
             { paint: 'Paint', 'rect-erase': 'Erase area', 'rect-fill': 'Fill area', inspect: 'Inspect' }[t]
           }</button>`).join('')}
       </div>
-      <div class="ad-row">
+      <div class="gm-row">
         <button data-act="stats">Stats</button>
         <button data-act="bans">Bans</button>
         <button data-act="reload">Reload</button>
         <button data-act="clearAll" class="danger">Wipe all</button>
       </div>
-      <div class="ad-row">
+      <div class="gm-row">
         <button data-act="import">Import image…</button>
       </div>
-      <div class="ad-row">
+      <div class="gm-row">
         <button data-act="iprules">Campus IPs</button>
       </div>
       ${this.source ? this.importControls() : ''}
-      <div class="ad-out">${extra}</div>`
+      <div class="gm-out">${extra}</div>`
   }
 
   /**
@@ -178,8 +178,8 @@ export class Admin {
   private ipForm(r: IpRules, note = '') {
     const esc = (s: string) => s.replace(/[<&]/g, (c) => (c === '<' ? '&lt;' : '&amp;'))
     return `
-      <div class="ad-ip">
-        <label class="ad-check">
+      <div class="gm-ip">
+        <label class="gm-check">
           <input type="checkbox" data-ip="enabled" ${r.enabled ? 'checked' : ''}>
           whitelist on
         </label>
@@ -190,11 +190,11 @@ export class Admin {
         <textarea data-ip="cidrs" rows="5" spellcheck="false"
           aria-label="Whitelisted ranges, one CIDR per line"
           placeholder="one CIDR per line">${esc(r.cidrs.join('\n'))}</textarea>
-        <div class="ad-row">
+        <div class="gm-row">
           <button data-act="saveIp" class="go">Save</button>
           <button data-act="closeIp">Close</button>
         </div>
-        <div class="ad-meta">${esc(note)}</div>
+        <div class="gm-meta">${esc(note)}</div>
       </div>`
   }
 
@@ -204,12 +204,12 @@ export class Admin {
     const g = this.host.getGhost()
     const metres = g ? `${g.w * 2} × ${g.h * 2} m` : ''
     return `
-      <div class="ad-import">
+      <div class="gm-import">
         <label>size <input type="range" data-opt="width" min="8" max="200"
           value="${this.opts.width}"><span>${this.opts.width}</span></label>
         <label>bg cut <input type="range" data-opt="tolerance" min="0" max="140"
           value="${this.opts.tolerance}"><span>${this.opts.tolerance}</span></label>
-        <label class="ad-check">
+        <label class="gm-check">
           <input type="checkbox" data-opt="centre" ${this.opts.centre ? 'checked' : ''}>
           crisp (pixel-art source)
         </label>
@@ -220,8 +220,8 @@ export class Admin {
                 { drop: 'transparent', holes: 'fill gaps', box: 'solid block' }[v]}</option>`).join('')}
           </select>
         </label>
-        <div class="ad-meta">${g ? `${g.px.length} px · ${metres} · drag to move` : ''}</div>
-        <div class="ad-row">
+        <div class="gm-meta">${g ? `${g.px.length} px · ${metres} · drag to move` : ''}</div>
+        <div class="gm-row">
           <button data-act="place" class="go">Place</button>
           <button data-act="cancel">Cancel</button>
         </div>
@@ -361,7 +361,7 @@ export class Admin {
         const r = await this.call('bans')
         const list: string[] = r?.bans ?? []
         this.render(list.length
-          ? list.map((id) => `<div class="ad-ban"><code>${id}</code><button data-unban="${id}">unban</button></div>`).join('')
+          ? list.map((id) => `<div class="gm-ban"><code>${id}</code><button data-unban="${id}">unban</button></div>`).join('')
           : '<code>no bans</code>')
         break
       }
@@ -407,7 +407,7 @@ export class Admin {
     const p = r?.painter
     this.render(p
       ? `<code>(${x},${y}) by ${p.id}</code>
-         <div class="ad-ban"><span>${new Date(p.at).toLocaleString()}</span>
+         <div class="gm-ban"><span>${new Date(p.at).toLocaleString()}</span>
          <button data-ban="${p.id}" class="danger">ban</button></div>`
       : `<code>(${x},${y}) — no recent painter on record</code>`)
   }
