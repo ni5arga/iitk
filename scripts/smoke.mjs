@@ -155,6 +155,60 @@ const t0 = performance.now()
 for (let i = 0; i < 30; i++) router.route(centre, pinned[i % pinned.length], 'foot')
 ok((performance.now() - t0) / 30 < 40, `route latency ${((performance.now() - t0) / 30).toFixed(1)}ms`)
 
+/* ── pixel canvas ────────────────────────────────────────────────────────── */
+
+console.log('\npixels')
+const PX_TMP = join(ROOT, 'node_modules/.cache/smoke-pixels.mjs')
+await build({
+  entryPoints: [join(ROOT, 'src/pixels/grid.ts')],
+  bundle: true, format: 'esm', platform: 'node', outfile: PX_TMP, logLevel: 'silent',
+})
+const PX = await import(PX_TMP + `?t=${Date.now()}`)
+const seed = JSON.parse(await readFile(join(ROOT, 'public/data/pixels-seed.json'), 'utf8'))
+
+// The grid maths is duplicated across the browser, the seed script and the
+// Functions. If it ever drifts, every stored pixel silently moves.
+//
+// The property that matters is that a pixel id survives a round trip exactly.
+// `pixelToLonLat` returns the north-west corner, so a *point* inside a cell can
+// sit up to one diagonal from it — that is the geometry, not an error.
+let idBad = 0
+for (let i = 0; i < 500; i++) {
+  const x = (i * 37) % PX.GRID_W, y = (i * 53) % PX.GRID_H
+  const [lon, lat] = PX.pixelToLonLat(x, y)
+  const back = PX.lonLatToPixel(lon + 1e-9, lat - 1e-9)
+  if (back.x !== x || back.y !== y) idBad++
+}
+ok(idBad === 0, 'pixel ids survive a lon/lat round trip exactly', `${idBad} drifted`)
+
+const diagonal = PX.PIXEL_M * Math.SQRT2
+let worst = 0
+for (const p of campus.pois.slice(0, 200)) {
+  const px = PX.lonLatToPixel(p.lon, p.lat)
+  const [lon, lat] = PX.pixelToLonLat(px.x, px.y)
+  worst = Math.max(worst, Math.hypot((lat - p.lat) * 111320, (lon - p.lon) * 99600))
+}
+ok(worst <= diagonal, `points land inside their cell (worst ${worst.toFixed(2)}m of ${diagonal.toFixed(2)}m)`)
+
+ok(seed.pixels.length > 1000, `seed art present (${seed.pixels.length} pixels)`)
+ok(seed.placed.length >= 10, `${seed.placed.length} seeded pieces`)
+
+const bad = seed.pixels.filter(([x, y, c]) =>
+  !PX.inBounds(x, y) || !Number.isInteger(c) || c <= 0 || c >= PX.PALETTE.length)
+ok(bad.length === 0, 'every seed pixel is in bounds with a real colour',
+   bad.length ? `${bad.length} bad, e.g. ${JSON.stringify(bad[0])}` : '')
+
+// Seed must agree with the grid it was generated against.
+ok(seed.grid.w === PX.GRID_W && seed.grid.h === PX.GRID_H,
+   'seed matches the current grid dimensions',
+   `${seed.grid.w}x${seed.grid.h} vs ${PX.GRID_W}x${PX.GRID_H} — rerun build:data`)
+
+const packed = PX.packChunk([{ x: 1, y: 2, c: 3 }, { x: 4, y: 5, c: 6 }])
+const round = PX.unpackChunk(packed)
+ok(round.length === 2 && round[1].c === 6, 'chunk pack/unpack round-trips', packed)
+
+await rm(PX_TMP, { force: true })
+
 /* ── map style ───────────────────────────────────────────────────────────── */
 
 // MapLibre validates the style at runtime and refuses to render if it is
@@ -191,8 +245,14 @@ for (const theme of ['dark', 'light']) {
 // non-null assertions hide the mismatch from tsc, and the failure surfaces at
 // runtime as "Cannot set properties of null" — i.e. a blank page.
 console.log('\ndom')
-const html = await readFile(join(ROOT, 'index.html'), 'utf8')
-const present = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]))
+
+// Two pages now, each with its own markup. src/pixels/* belongs to the canvas
+// page; everything else to the map page. Checking against the union would let
+// a genuine mismatch through.
+const PAGES = [
+  { html: 'index.html', src: (f) => !f.includes('/src/pixels/') },
+  { html: 'pixels/index.html', src: (f) => f.includes('/src/pixels/') },
+]
 
 const srcDir = join(ROOT, 'src')
 const walk = async (dir) => {
@@ -204,24 +264,30 @@ const walk = async (dir) => {
   }
   return out
 }
-
-const wanted = new Map() // id -> file
-for (const file of await walk(srcDir)) {
-  const code = await readFile(file, 'utf8')
-  for (const m of code.matchAll(/getElementById\(\s*['"]([^'"]+)['"]/g)) {
-    if (!wanted.has(m[1])) wanted.set(m[1], file.replace(ROOT + '/', ''))
-  }
-  for (const m of code.matchAll(/querySelector(?:All)?\(\s*['"]#([A-Za-z0-9_-]+)['"]/g)) {
-    if (!wanted.has(m[1])) wanted.set(m[1], file.replace(ROOT + '/', ''))
-  }
-}
+const allSrc = await walk(srcDir)
 
 // Elements the app creates at runtime rather than declaring in the markup.
 const RUNTIME_IDS = new Set(['route-badge'])
 
-const orphans = [...wanted].filter(([id]) => !present.has(id) && !RUNTIME_IDS.has(id))
-ok(orphans.length === 0, `all ${wanted.size} referenced ids exist in index.html`,
-   orphans.map(([id, f]) => `#${id} (${f})`).join(', '))
+for (const page of PAGES) {
+  const html = await readFile(join(ROOT, page.html), 'utf8')
+  const present = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]))
+
+  const wanted = new Map()
+  for (const file of allSrc.filter(page.src)) {
+    const code = await readFile(file, 'utf8')
+    for (const m of code.matchAll(/getElementById\(\s*['"]([^'"]+)['"]/g)) {
+      if (!wanted.has(m[1])) wanted.set(m[1], file.replace(ROOT + '/', ''))
+    }
+    for (const m of code.matchAll(/querySelector(?:All)?\(\s*['"]#([A-Za-z0-9_-]+)['"]/g)) {
+      if (!wanted.has(m[1])) wanted.set(m[1], file.replace(ROOT + '/', ''))
+    }
+  }
+
+  const orphans = [...wanted].filter(([id]) => !present.has(id) && !RUNTIME_IDS.has(id))
+  ok(orphans.length === 0, `${page.html}: all ${wanted.size} referenced ids exist`,
+     orphans.map(([id, f]) => `#${id} (${f})`).join(', '))
+}
 
 await rm(TMP, { force: true })
 await rm(ROUTER_TMP, { force: true })

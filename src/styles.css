@@ -154,6 +154,20 @@ kbd {
 }
 #open-search:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* The way into /pixels. A pixel-art face, so it says what it is without a
+   label — the only decorative thing in the chrome, and it earns it. */
+#pixels-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  border-radius: var(--r);
+  filter: saturate(.85);
+  transition: transform .12s ease, filter .12s ease;
+}
+#pixels-btn:hover { filter: saturate(1.15); transform: translateY(-1px) scale(1.06); }
+#pixels-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 #theme-btn {
   flex: none;
   width: 26px; height: 26px;

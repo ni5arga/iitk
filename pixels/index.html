@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<title>pixels · iitk.nis.pet</title>
+<meta name="description" content="Paint pixel art over the IIT Kanpur campus map.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0d10'/><rect x='7' y='7' width='7' height='7' fill='%23ec1f80'/><rect x='17' y='7' width='7' height='7' fill='%2313e67b'/><rect x='7' y='17' width='7' height='7' fill='%234093e4'/><rect x='17' y='17' width='7' height='7' fill='%23f9dd3b'/></svg>">
+<script>
+  try {
+    var t = localStorage.getItem('campusmap.theme')
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark')
+  } catch (e) { document.documentElement.setAttribute('data-theme', 'dark') }
+</script>
+</head>
+<body class="pixels">
+  <div id="map" aria-label="Campus map"></div>
+  <canvas id="pixel-canvas" aria-label="Pixel canvas"></canvas>
+
+  <header id="bar">
+    <a id="brand-btn" href="/">&larr; iitk<span>.nis.pet</span></a>
+    <span id="px-status">loading…</span>
+    <button id="theme-btn" type="button" aria-label="Change theme" title="Theme"></button>
+  </header>
+
+  <div id="px-hint">Zoom in to paint</div>
+
+  <footer id="px-dock">
+    <div id="px-palette" role="radiogroup" aria-label="Colour"></div>
+    <div id="px-actions">
+      <button id="px-erase" type="button" aria-pressed="false" title="Eraser">Erase</button>
+      <span id="px-budget" title="Pixels left before a cooldown"></span>
+      <a id="px-src" href="https://github.com/ni5arga/iitk" target="_blank" rel="noopener">source</a>
+      <span class="by">made by
+        <a href="https://www.cse.iitk.ac.in/users/nisarga/" target="_blank" rel="noopener">nisarga</a>
+      </span>
+    </div>
+  </footer>
+
+  <div id="boot">loading canvas…</div>
+  <script type="module" src="/src/pixels/main.ts"></script>
+</body>
+</html>

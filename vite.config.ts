@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from 'vite'
+import { resolve } from 'node:path'
 
 /**
  * Vite stamps `crossorigin` on the emitted <script> and <link rel=stylesheet>.
@@ -22,5 +23,16 @@ function noCrossorigin(): Plugin {
 export default defineConfig({
   plugins: [noCrossorigin()],
   server: { port: 5180, open: false },
-  build: { target: 'es2022', chunkSizeWarningLimit: 1200 },
+  build: {
+    target: 'es2022',
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        // Its own entry point, so the map page does not carry the canvas code
+        // and vice versa. Emits dist/pixels/index.html, served at /pixels.
+        pixels: resolve(__dirname, 'pixels/index.html'),
+      },
+    },
+  },
 })
