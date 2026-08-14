@@ -63,14 +63,20 @@ async function start() {
   let remaining = 30
   let cooldownUntil = 0
   let live = false
+  /** Cursor into the server's edit feed; everything up to here is applied. */
+  let seq = 0
+  let epoch = '0'
 
   try {
     const server = await json<{
-      burst: number; cooldown: number; chunks: Record<string, string>
+      burst: number; cooldown: number; seq?: number; epoch?: string
+      chunks: Record<string, string>
     }>(`${base}api/pixels`)
     applyChunks(server.chunks)
     burst = server.burst
     remaining = server.burst
+    seq = server.seq ?? 0
+    epoch = server.epoch ?? '0'
     live = true
   } catch {
     // No Functions binding (local `vite preview`, or KV not wired up yet).
@@ -326,13 +332,68 @@ async function start() {
   /* ── god mode ─────────────────────────────────────────────────────────── */
 
   async function reloadCanvas() {
-    const server = await json<{ chunks: Record<string, string> }>(`${base}api/pixels`)
+    const server = await json<{
+      chunks: Record<string, string>; seq?: number; epoch?: string
+    }>(`${base}api/pixels`)
     board.fill(0)
     painted.clear()
     for (const [x, y, c] of seed.pixels) set(x, y, c)
     applyChunks(server.chunks)
+    seq = server.seq ?? seq
+    epoch = server.epoch ?? epoch
     draw()
   }
+
+  /* ── live updates ─────────────────────────────────────────────────────── */
+
+  /**
+   * Poll the edit feed and apply just the difference.
+   *
+   * Pages Functions cannot hold a WebSocket open, so this polls — but it asks
+   * for "everything after sequence N" and usually gets an empty array, which is
+   * a few hundred bytes rather than the whole canvas. Backs right off when the
+   * tab is hidden, so a forgotten tab is not hammering the worker all day.
+   */
+  const POLL_ACTIVE_MS = 2500
+  const POLL_HIDDEN_MS = 30_000
+  let pollTimer: ReturnType<typeof setTimeout> | undefined
+  let failures = 0
+
+  async function poll() {
+    if (!live) return
+    try {
+      const r = await json<{
+        seq: number; epoch: string; stale: boolean; pixels: [number, number, number][]
+      }>(`${base}api/pixels/since?seq=${seq}`)
+
+      // A wipe, or we fell behind the feed window — only a full reload is right.
+      if (r.epoch !== epoch || r.stale) {
+        await reloadCanvas()
+        setStatus('canvas reset by a moderator', 'warn')
+      } else if (r.pixels.length) {
+        for (const [x, y, c] of r.pixels) set(x, y, c)
+        seq = r.seq
+        draw()
+        // Only announce other people's edits; your own already showed instantly.
+        const mine = queue.length
+        if (!mine) setStatus(`${r.pixels.length} pixel${r.pixels.length > 1 ? 's' : ''} just changed`, '')
+      } else {
+        seq = r.seq
+      }
+      failures = 0
+    } catch {
+      // Keep polling, just slower, so a blip does not permanently kill live mode.
+      failures++
+    }
+    const base_ms = document.hidden ? POLL_HIDDEN_MS : POLL_ACTIVE_MS
+    pollTimer = setTimeout(poll, Math.min(base_ms * (1 + failures), 60_000))
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || !live) return
+    clearTimeout(pollTimer)
+    poll()                      // catch up the moment the tab comes back
+  })
 
   const admin = new Admin({
     redraw: draw,
@@ -545,8 +606,9 @@ async function start() {
     boot.classList.add('gone')
     updateHint()
     updateBudget()
-    setStatus(live ? `${GRID_W}×${GRID_H} grid · 2 m per pixel` : 'read-only preview', live ? '' : 'warn')
+    setStatus(live ? `${GRID_W}×${GRID_H} grid · 2 m per pixel · live` : 'read-only preview', live ? '' : 'warn')
     draw()
+    if (live) pollTimer = setTimeout(poll, POLL_ACTIVE_MS)
   })
 }
 
