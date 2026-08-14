@@ -138,6 +138,32 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
   }).catch(() => { /* logging must never break painting */ })
 }
 
+/* ── live feed ───────────────────────────────────────────────────────────── */
+
+/**
+ * A rolling log of recent edits so clients can catch up without re-downloading
+ * the whole canvas. Each entry carries a monotonic sequence number; a client
+ * says "I have up to N" and gets only what came after.
+ *
+ * Cloudflare Pages Functions cannot hold a WebSocket, so this is polled — but
+ * polling a few hundred bytes every couple of seconds is far cheaper than
+ * re-fetching every chunk, and it means an edit shows up without a reload.
+ */
+const FEED_MAX = 500
+
+async function pushFeed(env: Env, pixels: Pixel[]) {
+  const raw = await env.PIXELS.get('feed')
+  const feed = raw
+    ? (JSON.parse(raw) as { seq: number; items: [number, number, number, number][] })
+    : { seq: 0, items: [] }
+  for (const p of pixels) {
+    feed.seq++
+    feed.items.push([feed.seq, p.x, p.y, p.c])
+  }
+  if (feed.items.length > FEED_MAX) feed.items.splice(0, feed.items.length - FEED_MAX)
+  await env.PIXELS.put('feed', JSON.stringify(feed))
+}
+
 /* ── attribution ─────────────────────────────────────────────────────────── */
 
 /**
@@ -180,13 +206,40 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
   /* GET /api/pixels */
   if (request.method === 'GET' && path === '') {
+    const [chunks, feedRaw, epoch] = await Promise.all([
+      readCanvas(env),
+      env.PIXELS.get('feed'),
+      env.PIXELS.get('epoch'),
+    ])
+    const feed = feedRaw ? JSON.parse(feedRaw) as { seq: number } : { seq: 0 }
     return json({
       grid: { w: GRID_W, h: GRID_H, chunk: CHUNK },
       burst: BURST,
       cooldown: COOLDOWN_S,
       maxPerRequest: MAX_PER_REQUEST,
-      chunks: await readCanvas(env),
+      seq: feed.seq,
+      epoch: epoch ?? '0',
+      chunks,
     })
+  }
+
+  /* GET /api/pixels/since?seq=N — just what changed. */
+  if (request.method === 'GET' && path === 'since') {
+    const since = Number(new URL(request.url).searchParams.get('seq') ?? 0)
+    const [raw, epoch] = await Promise.all([env.PIXELS.get('feed'), env.PIXELS.get('epoch')])
+    const feed = raw
+      ? (JSON.parse(raw) as { seq: number; items: [number, number, number, number][] })
+      : { seq: 0, items: [] }
+
+    // Behind the window the feed still holds? Only a full reload is correct.
+    const oldest = feed.items.length ? feed.items[0]![0] : feed.seq
+    const stale = since > 0 && since < oldest - 1
+    return json({
+      seq: feed.seq,
+      epoch: epoch ?? '0',
+      stale,
+      pixels: stale ? [] : feed.items.filter((i) => i[0] > since).map((i) => [i[1], i[2], i[3]]),
+    }, 200, { 'cache-control': 'no-store' })
   }
 
   /* POST /api/pixels/paint */
@@ -243,6 +296,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     await applyPixels(env, pixels)
     ctx.waitUntil(logPixels(env, who, pixels))
     ctx.waitUntil(rememberPainter(env, who, pixels))
+    ctx.waitUntil(pushFeed(env, pixels))
 
     return json({
       ok: true,
@@ -285,6 +339,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
           }
         }
         await applyPixels(env, px)
+        ctx.waitUntil(pushFeed(env, px))
         ctx.waitUntil(logPixels(env, 'ADMIN', px.slice(0, 5), `${op} ${w}x${h} `))
         return json({ ok: true, op, affected: px.length })
       }
@@ -299,6 +354,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
           if (inBounds(x, y) && c >= 0 && c < PALETTE.length) px.push({ x, y, c })
         }
         await applyPixels(env, px)
+        ctx.waitUntil(pushFeed(env, px))
         ctx.waitUntil(logPixels(env, 'ADMIN', px.slice(0, 5), 'stamp '))
         return json({ ok: true, op, affected: px.length })
       }
@@ -312,6 +368,10 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
           for (const k of page.keys) { await env.PIXELS.delete(k.name); n++ }
           cursor = page.list_complete ? undefined : page.cursor
         } while (cursor)
+        // A full wipe cannot be sent as a diff; bump the epoch and every client
+        // reloads from scratch on its next poll.
+        await env.PIXELS.put('epoch', String(Date.now()))
+        await env.PIXELS.delete('feed')
         ctx.waitUntil(logPixels(env, 'ADMIN', [], `cleared the whole canvas (${n} chunks) `))
         return json({ ok: true, op, chunksDeleted: n })
       }
