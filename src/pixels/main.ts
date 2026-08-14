@@ -8,7 +8,7 @@ import {
   GRID_W, GRID_H, PALETTE, TRANSPARENT,
   lonLatToPixel, pixelToLonLat, inBounds, unpackChunk,
 } from './grid'
-import { Admin } from './admin'
+import { Admin, type Ghost } from './admin'
 
 const base = import.meta.env.BASE_URL
 const boot = document.getElementById('boot')!
@@ -145,6 +145,13 @@ async function start() {
   resize()
   addEventListener('resize', resize)
 
+  /**
+   * A pending import, floating over the canvas until it is placed. Held here
+   * rather than in the admin module because drawing and hit-testing both live
+   * on this side.
+   */
+  let ghost: Ghost | null = null
+
   let hover: { x: number; y: number } | null = null
 
   function draw() {
@@ -175,6 +182,31 @@ async function start() {
       g.fillStyle = PALETTE[board[i]!]!
       // +1 closes the hairline seams between adjacent cells.
       g.fillRect(pt.x, pt.y, sw + 1, sh + 1)
+    }
+
+    if (ghost) {
+      // Drawn at reduced alpha so the artwork underneath stays readable while
+      // it is being positioned.
+      g.globalAlpha = 0.75
+      for (const [px, py, c] of ghost.px) {
+        const x = ghost.x + px, y = ghost.y + py
+        if (x < x0 || x > x1 || y < y0 || y > y1) continue
+        const [lon, lat] = pixelToLonLat(x, y)
+        const pt = map.project([lon, lat])
+        g.fillStyle = PALETTE[c]!
+        g.fillRect(pt.x, pt.y, sw + 1, sh + 1)
+      }
+      g.globalAlpha = 1
+
+      const [gLon, gLat] = pixelToLonLat(ghost.x, ghost.y)
+      const [gLon2, gLat2] = pixelToLonLat(ghost.x + ghost.w, ghost.y + ghost.h)
+      const pA = map.project([gLon, gLat])
+      const pB = map.project([gLon2, gLat2])
+      g.strokeStyle = '#61d47c'
+      g.setLineDash([6, 4])
+      g.lineWidth = 1.5
+      g.strokeRect(pA.x + .5, pA.y + .5, pB.x - pA.x, pB.y - pA.y)
+      g.setLineDash([])
     }
 
     if (dragFrom && dragTo) {
@@ -308,6 +340,18 @@ async function start() {
     reload: reloadCanvas,
     status: setStatus,
     currentColour: () => (isErasing() ? TRANSPARENT : colour),
+    setGhost: (gh) => {
+      ghost = gh
+      // Drop a new import in the middle of what the admin is looking at.
+      if (gh && gh.x < 0) {
+        const c = map.getCenter()
+        const p = lonLatToPixel(c.lng, c.lat)
+        gh.x = Math.max(0, p.x - (gh.w >> 1))
+        gh.y = Math.max(0, p.y - (gh.h >> 1))
+      }
+      draw()
+    },
+    getGhost: () => ghost,
   }, base)
 
   // Rectangle tools drag on the map, so panning has to yield while one is armed.
@@ -315,7 +359,20 @@ async function start() {
   let dragTo: { x: number; y: number } | null = null
   const rectTool = () => admin.unlocked && (admin.tool === 'rect-erase' || admin.tool === 'rect-fill')
 
+  let ghostGrab: { dx: number; dy: number } | null = null
+
   map.on('mousedown', (e) => {
+    if (ghost) {
+      const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
+      const inside = x >= ghost.x && y >= ghost.y &&
+                     x < ghost.x + ghost.w && y < ghost.y + ghost.h
+      if (inside) {
+        e.preventDefault()
+        map.dragPan.disable()
+        ghostGrab = { dx: x - ghost.x, dy: y - ghost.y }
+        return
+      }
+    }
     if (!rectTool()) return
     const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
     if (!inBounds(x, y)) return
@@ -326,12 +383,20 @@ async function start() {
   })
 
   map.on('mousemove', (e) => {
+    if (ghostGrab && ghost) {
+      const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
+      ghost.x = x - ghostGrab.dx
+      ghost.y = y - ghostGrab.dy
+      draw()
+      return
+    }
     if (!dragFrom) return
     const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
     if (inBounds(x, y)) { dragTo = { x, y }; draw() }
   })
 
   map.on('mouseup', async () => {
+    if (ghostGrab) { ghostGrab = null; map.dragPan.enable(); admin.onGhostMoved(); return }
     if (!dragFrom || !dragTo) return
     const a = dragFrom, b = dragTo
     dragFrom = dragTo = null
@@ -404,7 +469,7 @@ async function start() {
     if (!flushTimer) flushTimer = setTimeout(flush, 180)
   }
 
-  map.on('click', (e) => { if (!rectTool()) place(e.lngLat) })
+  map.on('click', (e) => { if (!rectTool() && !ghost) place(e.lngLat) })
 
   map.on('mousemove', (e) => {
     cursor = e.lngLat

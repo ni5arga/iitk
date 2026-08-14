@@ -9,7 +9,22 @@
  * dashboard is never left lying around on a shared machine.
  */
 
+import { convert, decode, DEFAULTS, type ConvertOptions } from './import'
+
 const KEY = 'campusmap.pixels.admin'
+
+/** A converted image floating over the canvas, not yet committed. */
+export interface Ghost {
+  px: [number, number, number][]
+  w: number
+  h: number
+  x: number
+  y: number
+}
+
+/** Pixels per admin request. The route caps at 40k; this keeps each POST small
+ *  enough to be quick and to fail in a recoverable chunk. */
+const COMMIT_BATCH = 4000
 
 export type Tool = 'paint' | 'rect-erase' | 'rect-fill' | 'inspect'
 
@@ -22,6 +37,9 @@ export interface AdminHost {
   reload(): Promise<void>
   status(text: string, tone?: '' | 'warn' | 'bad'): void
   currentColour(): number
+  /** Pass `x: -1` to have the page centre it on the current view. */
+  setGhost(g: Ghost | null): void
+  getGhost(): Ghost | null
 }
 
 export class Admin {
@@ -30,6 +48,9 @@ export class Admin {
   private host: AdminHost
   private panel: HTMLElement
   private base: string
+  /** Kept so the sliders can re-convert without re-reading the file. */
+  private source: ImageData | null = null
+  private opts: ConvertOptions = { ...DEFAULTS }
 
   constructor(host: AdminHost, base: string) {
     this.host = host
@@ -41,6 +62,9 @@ export class Admin {
     this.panel.hidden = true
     document.body.append(this.panel)
     this.panel.addEventListener('click', (e) => this.onClick(e))
+    // `input` rather than `change` so dragging a slider updates continuously.
+    this.panel.addEventListener('input', (e) => this.onInput(e))
+    this.panel.addEventListener('change', (e) => this.onInput(e))
 
     // Ctrl+Shift+A, or ?admin in the URL. Deliberately undiscoverable — there
     // is no button for people to find and poke at.
@@ -70,6 +94,8 @@ export class Admin {
 
   lock() {
     this.token = null
+    this.source = null
+    this.host.setGhost(null)
     sessionStorage.removeItem(KEY)
     this.panel.hidden = true
     document.body.classList.remove('admin')
@@ -119,12 +145,128 @@ export class Admin {
         <button data-act="reload">Reload</button>
         <button data-act="clearAll" class="danger">Wipe all</button>
       </div>
+      <div class="ad-row">
+        <button data-act="import">Import image…</button>
+      </div>
+      ${this.source ? this.importControls() : ''}
       <div class="ad-out">${extra}</div>`
+  }
+
+  /** Live controls for a loaded image. Every change re-converts and repaints
+   *  the ghost, so the admin sees the real result rather than a guess. */
+  private importControls() {
+    const g = this.host.getGhost()
+    const metres = g ? `${g.w * 2} × ${g.h * 2} m` : ''
+    return `
+      <div class="ad-import">
+        <label>size <input type="range" data-opt="width" min="8" max="200"
+          value="${this.opts.width}"><span>${this.opts.width}</span></label>
+        <label>bg cut <input type="range" data-opt="tolerance" min="0" max="140"
+          value="${this.opts.tolerance}"><span>${this.opts.tolerance}</span></label>
+        <label class="ad-check">
+          <input type="checkbox" data-opt="centre" ${this.opts.centre ? 'checked' : ''}>
+          crisp (pixel-art source)
+        </label>
+        <label>backdrop
+          <select data-opt="backdrop">
+            ${(['drop', 'holes', 'box'] as const).map((v) =>
+              `<option value="${v}" ${this.opts.backdrop === v ? 'selected' : ''}>${
+                { drop: 'transparent', holes: 'fill gaps', box: 'solid block' }[v]}</option>`).join('')}
+          </select>
+        </label>
+        <div class="ad-meta">${g ? `${g.px.length} px · ${metres} · drag to move` : ''}</div>
+        <div class="ad-row">
+          <button data-act="place" class="go">Place</button>
+          <button data-act="cancel">Cancel</button>
+        </div>
+      </div>`
+  }
+
+  private reconvert() {
+    if (!this.source) return
+    const out = convert(this.source, this.opts)
+    const prev = this.host.getGhost()
+    this.host.setGhost({
+      ...out,
+      // Keep the position across re-converts; -1 asks the page to centre it.
+      x: prev ? prev.x : -1,
+      y: prev ? prev.y : -1,
+    })
+    this.render()
+  }
+
+  private async pickImage() {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      this.host.status(`decoding ${file.name}…`, '')
+      try {
+        this.source = await decode(file)
+        this.host.setGhost(null)      // reset position for a new image
+        this.opts = { ...DEFAULTS }
+        this.reconvert()
+        this.host.status('drag to position, then Place', '')
+      } catch (err) {
+        this.host.status(`could not read that image — ${(err as Error).message}`, 'bad')
+      }
+    }
+    input.click()
+  }
+
+  private async commitGhost() {
+    const g = this.host.getGhost()
+    if (!g) return
+    const all: [number, number, number][] = g.px.map(([x, y, c]) => [g.x + x, g.y + y, c])
+    let done = 0
+    for (let i = 0; i < all.length; i += COMMIT_BATCH) {
+      const batch = all.slice(i, i + COMMIT_BATCH)
+      const r = await this.call('paint', { pixels: batch })
+      if (!r?.ok) {
+        this.host.status(`stopped after ${done} pixels — ${r?.error ?? 'failed'}`, 'bad')
+        return
+      }
+      done += batch.length
+      this.host.status(`placing… ${done}/${all.length}`, '')
+    }
+    this.source = null
+    this.host.setGhost(null)
+    await this.host.reload()
+    this.host.status(`placed ${done} pixels`, '')
+    this.render()
+  }
+
+  /** Called by the page when the ghost has been dragged, to refresh the readout. */
+  onGhostMoved() {
+    if (this.source) this.render()
+  }
+
+  /** Sliders and checkboxes re-convert live. */
+  private onInput(e: Event) {
+    const el = e.target as HTMLInputElement
+    const key = el.dataset.opt as keyof ConvertOptions | undefined
+    if (!key) return
+    const o = this.opts as unknown as Record<string, unknown>
+    if (el.type === 'checkbox') o[key] = el.checked
+    else if (el.tagName === 'SELECT') o[key] = el.value
+    else o[key] = Number(el.value)
+    this.reconvert()
   }
 
   private async onClick(e: Event) {
     const el = (e.target as HTMLElement).closest('button') as HTMLElement | null
     if (!el) return
+
+    if (el.dataset.act === 'import') { void this.pickImage(); return }
+    if (el.dataset.act === 'place') { void this.commitGhost(); return }
+    if (el.dataset.act === 'cancel') {
+      this.source = null
+      this.host.setGhost(null)
+      this.render()
+      return
+    }
 
     if (el.dataset.tool) {
       this.tool = el.dataset.tool as Tool
