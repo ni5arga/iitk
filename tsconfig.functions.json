@@ -17,5 +17,5 @@
     "isolatedModules": true,
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["functions", "src/pixels/grid.ts"]
+  "include": ["functions", "shared", "src/pixels/grid.ts"]
 }

@@ -145,12 +145,13 @@ hesitate to tag me in the issue/PR thread.
 
 ## Pixels
 
-> **Under development — not deployed.** The canvas is excluded from the
-> production build and there is no link to it from the map; `/pixels` redirects
-> to the homepage. Painting was throwing a `ReferenceError` server-side on every
-> request (Cloudflare error 1101), so the board stayed empty no matter what
-> anyone drew. That is fixed, but it stays off public view until the rest of the
-> work below lands. Run it locally with `PIXELS=1 npm run dev`.
+> **Early days.** Expect rough edges. The whole feature — page, link and API —
+> is behind one switch, `PIXELS_ENABLED` in [`shared/pixels-flag.ts`](shared/pixels-flag.ts).
+> Set it to `false` and the build ships no `/pixels` page, no link from the map,
+> and the API answers 404; `/pixels` then redirects to the homepage. A
+> `PIXELS_ENABLED` variable on the Pages project (`"0"` / `"1"`) overrides the
+> constant at runtime, so it can be pulled from the dashboard without a deploy.
+> `PIXELS=1 npm run dev` forces the page on locally while it is off.
 
 `/pixels` is a shared canvas laid over the campus: a fixed grid at **2 m per
 pixel**, 1495 × 1503 cells, painted by anyone who turns up. Seeded with pride

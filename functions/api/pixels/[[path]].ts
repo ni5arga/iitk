@@ -24,6 +24,7 @@
  */
 
 import { CHUNK, GRID_W, GRID_H, PALETTE, chunkOf, inBounds, type Pixel } from '../../../src/pixels/grid'
+import { PIXELS_ENABLED } from '../../../shared/pixels-flag'
 
 interface Env {
   /** Preferred binding name. */
@@ -33,7 +34,19 @@ interface Env {
   iitk_pixels?: D1Database
   DISCORD_WEBHOOK?: string
   PIXELS_ADMIN_TOKEN?: string
+  /** "0" or "1" — a dashboard kill switch that overrides PIXELS_ENABLED. */
+  PIXELS_ENABLED?: string
 }
+
+/**
+ * Whether the canvas is served at all. The Pages variable wins over the
+ * compiled-in constant so the whole feature can be killed from the dashboard
+ * without waiting on a deploy.
+ */
+const pixelsOn = (env: Env) =>
+  env.PIXELS_ENABLED === '0' ? false
+  : env.PIXELS_ENABLED === '1' ? true
+  : PIXELS_ENABLED
 
 /** The bound database, whichever name it went in under. */
 const database = (env: Env) => env.DB ?? env.iitk_pixels
@@ -323,6 +336,11 @@ async function logPixels(env: Env, who: string, pixels: Pixel[], note = '') {
 export const onRequest: PagesFunction<Env> = async (ctx) => {
   const { request, env } = ctx
   const path = (ctx.params.path as string[] | undefined)?.join('/') ?? ''
+
+  // Gated with the page, not separately: a UI-only takedown left this live and
+  // paintable by anyone who knew the path. 404 rather than 403 — a disabled
+  // canvas should look absent, not merely shut.
+  if (!pixelsOn(env)) return json({ error: 'not found' }, 404)
 
   const db = database(env)
   if (!db) {

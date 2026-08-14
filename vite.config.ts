@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import { resolve } from 'node:path'
+import { PIXELS_ENABLED } from './shared/pixels-flag'
 
 /**
  * Vite stamps `crossorigin` on the emitted <script> and <link rel=stylesheet>.
@@ -21,13 +22,11 @@ function noCrossorigin(): Plugin {
 }
 
 /**
- * The pixel canvas is unfinished and off public view — painting threw a
- * ReferenceError on every request (Cloudflare 1101), so the board silently
- * stayed empty for everyone. Shipping it is opt-in rather than opt-out: a plain
- * `npm run build`, which is what Cloudflare Pages runs, emits no /pixels/ page
- * and no link to it. Work on it with `PIXELS=1 npm run dev` (or `:build`).
+ * Whether this build ships the pixel canvas. Flipping PIXELS_ENABLED off drops
+ * the /pixels page, the link to it, and (in the Functions, which read the same
+ * constant) the API — `PIXELS=1` still forces the page on for local work.
  */
-const withPixels = process.env.PIXELS === '1'
+const withPixels = PIXELS_ENABLED || process.env.PIXELS === '1'
 
 /** Drop the homepage entry point when the canvas is not being shipped, so the
  *  button is absent from the markup rather than merely hidden with CSS. */
@@ -38,6 +37,18 @@ function pixelsGate(): Plugin {
     transformIndexHtml(html) {
       if (withPixels) return html
       return html.replace(/\s*<a id="pixels-btn"[\s\S]*?<\/a>/, '')
+    },
+    // Emitted only while the canvas is down, so an existing /pixels link lands
+    // on the map rather than a bare 404. Kept here rather than in public/ so
+    // the rule cannot outlive the takedown it belongs to.
+    generateBundle() {
+      if (withPixels) return
+      this.emitFile({
+        type: 'asset',
+        fileName: '_redirects',
+        source: '# The pixel canvas is under development and off public view.\n' +
+          '/pixels     /  302\n/pixels/*   /  302\n',
+      })
     },
   }
 }
