@@ -205,3 +205,8 @@ body.admin::after {
 @media (max-width: 760px) {
   #px-admin { left: var(--pad); right: var(--pad); width: auto; }
 }
+
+/* Held-Space stroke. The cursor change is the only always-on cue that moving
+   the mouse is now painting rather than just hovering. */
+body.stroking .maplibregl-canvas { cursor: cell; }
+body.stroking #px-status::after { content: ' · drawing'; color: var(--accent); }

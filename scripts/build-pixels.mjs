@@ -7,8 +7,8 @@
 // something on it before a single write happens. User-drawn pixels layer on
 // top and win wherever they overlap.
 
-import { writeFile, mkdir } from 'node:fs/promises'
-import { readFile } from 'node:fs/promises'
+import { writeFile, mkdir, readFile, readdir } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
@@ -147,51 +147,6 @@ const purpleLong = sprite('purple-long', [
   '...kkkkkkkkkk...',
 ])
 
-// Bocchi. 32 x 40 — 64 m by 80 m on the ground, the largest piece by a wide
-// margin, so it wants an open field rather than a rooftop.
-const bocchi = sprite('bocchi', [
-  "..............kk................",
-  ".............khk................",
-  "............khhk................",
-  "..........kkhhhkk...............",
-  ".......kkkhhhhhhkkk.............",
-  ".....kkhhhhhhhhhhhhkk...........",
-  "....khhhhhhhhhhhhhhhhk..........",
-  "...khhhhhhhhhhhhhhhhhhk.........",
-  "..khhhhhhhhhhhhhhhhhhhhk........",
-  "..khhhhhhhhhhhhhhhhhhhhhk.......",
-  ".khhhhhhhhhhhhhhhhhhhhhhhk......",
-  ".khhhhhhhhhhhhhhhhhhhhhhhhk.....",
-  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
-  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
-  "khhhhhkYYYYYYYYYYYYkhhhhhhhk....",
-  "khhhhkYYYYYYYYYYYYYYkhhhhhhk....",
-  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
-  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
-  "khhhkYkBBkYYYYYYkBBkYkhhhhhk....",
-  "khhhkYkBckYYYYYYkBckYkhhhhhk....",
-  "khhhkYkBBkYYYYYYkBBkYkhhhhhk....",
-  "khhhkYYYYYYYYYYYYYYYYkhhhhhk....",
-  "khhhkYSYYYYYYYYYYYYSYkhhhhhk....",
-  "khhhkYYYYYYkwwkYYYYYYkhhhhhk....",
-  "khhhhkYYYYYYYYYYYYYYkhhhhhhk....",
-  "khhhhhkYYYYYYYYYYYYkhhhhhhhk....",
-  "khhhhhhkkYYYYYYYYkkhhhhhhhhk....",
-  "khhhhhhhhkkkkkkkkhhhhhhhhhhk....",
-  "khhhhhhhhhhhhhhhhhhhhhhhhhhk....",
-  ".khhhhhhhhhhhhhhhhhhhhhhhhk.....",
-  ".kffhhhhhhhhhhhhhhhhhhhhffk.....",
-  "..kffhhhhhhhhhhhhhhhhhhfffk.....",
-  "...kkffhhhhhhhhhhhhhhffkk.......",
-  ".....kkkfffhhhhhhfffkkk.........",
-  "........kkkwwwwwwkkk............",
-  ".......khwwwwwwwwwwhk...........",
-  "......khhwwwwwwwwwwhhk..........",
-  ".....khhhwwwwwwwwwwhhhk.........",
-  ".....khhhhwwwwwwwwhhhhk.........",
-  ".....kkkkkkkkkkkkkkkkkk.........",
-])
-
 /* ── pride flags ─────────────────────────────────────────────────────────── */
 
 const FLAGS = [
@@ -206,6 +161,20 @@ const FLAGS = [
                                ['r', 2], ['o', 2], ['y', 2], ['n', 2], ['b', 2], ['P', 2]]),
 ]
 
+/* ── converted references ────────────────────────────────────────────────── */
+// Produced by scripts/pixelify.mjs from reference images. These are somebody
+// else's drawings run through a palette converter, so each carries its source
+// and is credited separately from the hand-drawn pieces.
+
+const ART_DIR = join(ROOT, 'data/curated/pixel-art')
+const converted = {}
+if (existsSync(ART_DIR)) {
+  for (const f of (await readdir(ART_DIR)).filter((f) => f.endsWith('.json'))) {
+    const a = JSON.parse(await readFile(join(ART_DIR, f), 'utf8'))
+    converted[a.name] = { name: a.name, w: a.w, h: a.h, px: a.px, source: a.source }
+  }
+}
+
 /* ── placement ───────────────────────────────────────────────────────────── */
 // Anchored to real campus features so the art sits somewhere meaningful rather
 // than floating in a field. Offsets are in pixels from the anchor's centre.
@@ -214,7 +183,9 @@ const PLACEMENTS = [
   { art: pinkTwintails, at: 'New Lecture Hall Complex', dx: -34, dy: -30 },
   { art: blueBob, at: 'Hall 5 Mess', dx: 26, dy: -34 },
   { art: purpleLong, at: 'P K Kelkar Library', dx: 30, dy: 16 },
-  { art: bocchi, at: 'Pronite Ground', dx: -16, dy: -20, fallback: 'Auditorium Grounds' },
+  { art: converted['bocchi-guitar'], at: 'Pronite Ground', dx: -23, dy: -23, fallback: 'Auditorium Grounds' },
+  { art: converted['bocchi-face'], at: 'Events Ground', dx: -48, dy: -25, fallback: 'Auditorium Grounds' },
+  { art: converted['bocchi-chibi'], at: 'Open Air Theatre', dx: 22, dy: -18 },
 
   { art: FLAGS[0], at: 'Open Air Theatre', dx: -12, dy: -26 },
   { art: FLAGS[1], at: 'Hall 12 Mess', dx: -12, dy: -28 },
@@ -233,7 +204,7 @@ const board = new Map() // "x,y" -> colour, so later art wins on overlap
 const placed = []
 const warnings = []
 
-for (const { art, at, dx, dy, fallback } of PLACEMENTS) {
+for (const { art, at, dx, dy, fallback } of PLACEMENTS.filter((p) => p.art)) {
   const poi = byName.get(at) ?? (fallback ? byName.get(fallback) : undefined)
   if (!poi) { warnings.push(`no anchor "${at}" — skipped ${art.name}`); continue }
 
@@ -248,7 +219,8 @@ for (const { art, at, dx, dy, fallback } of PLACEMENTS) {
     board.set(`${x},${y}`, c)
   }
   if (clipped) warnings.push(`${art.name}: ${clipped}px fell outside the grid`)
-  placed.push({ name: art.name, at: poi.name, x: ox, y: oy, w: art.w, h: art.h })
+  placed.push({ name: art.name, at: poi.name, x: ox, y: oy, w: art.w, h: art.h,
+                ...(art.source ? { source: art.source } : {}) })
 }
 
 const pixels = [...board].map(([k, c]) => {
@@ -259,6 +231,7 @@ const pixels = [...board].map(([k, c]) => {
 const payload = {
   _note: 'Seeded artwork, baked at build time. Not user data and not stored in KV.',
   _author: 'nisarga@cse.iitk.ac.in',
+  _note2: 'Pieces carrying a `source` are converted from someone else\'s artwork by scripts/pixelify.mjs — credited to their source, not to the site author.',
   grid: { w: G.GRID_W, h: G.GRID_H, pixelMetres: G.PIXEL_M, chunk: G.CHUNK },
   placed,
   pixels,

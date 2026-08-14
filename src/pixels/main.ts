@@ -208,7 +208,9 @@ async function start() {
   /* ── palette ──────────────────────────────────────────────────────────── */
 
   let colour = 8 // red
+  /** Eraser, from the checkerboard swatch or the button. */
   let erasing = false
+  const isErasing = () => erasing
 
   const palEl = document.getElementById('px-palette')!
   // Transparent is a first-class colour, not a mode. Anyone can pick it and
@@ -224,9 +226,10 @@ async function start() {
   function paintSwatches() {
     palEl.querySelectorAll<HTMLElement>('.sw').forEach((s) => {
       const c = +s.dataset.c!
-      s.setAttribute('aria-checked', String(c === TRANSPARENT ? erasing : !erasing && c === colour))
+      s.setAttribute('aria-checked',
+        String(c === TRANSPARENT ? isErasing() : !isErasing() && c === colour))
     })
-    eraseBtn.setAttribute('aria-pressed', String(erasing))
+    eraseBtn.setAttribute('aria-pressed', String(isErasing()))
   }
 
   palEl.addEventListener('click', (e) => {
@@ -240,6 +243,30 @@ async function start() {
   const eraseBtn = document.getElementById('px-erase')!
   eraseBtn.addEventListener('click', () => { erasing = !erasing; paintSwatches() })
   paintSwatches()
+
+  // Hold Space to draw a continuous stroke instead of clicking each cell. It
+  // paints whatever is selected, so with the eraser picked it rubs out a line
+  // in one pass. Clicking once per pixel is the tedious part of pixel art.
+  let stroking = false
+  let cursor: maplibregl.LngLat | null = null
+
+  function setStroking(on: boolean) {
+    if (stroking === on) return
+    stroking = on
+    document.body.classList.toggle('stroking', on)
+  }
+
+  addEventListener('keydown', (e) => {
+    if (e.code !== 'Space') return
+    if (/^(INPUT|TEXTAREA)$/.test((e.target as HTMLElement)?.tagName)) return
+    e.preventDefault()          // Space would otherwise scroll or re-fire a button
+    if (e.repeat) return
+    setStroking(true)
+    if (cursor) place(cursor)   // start the stroke under the cursor immediately
+  })
+  addEventListener('keyup', (e) => { if (e.code === 'Space') setStroking(false) })
+  // A lost keyup — alt-tab mid-stroke — would leave it painting forever.
+  addEventListener('blur', () => setStroking(false))
 
   /* ── painting ─────────────────────────────────────────────────────────── */
 
@@ -280,7 +307,7 @@ async function start() {
     setLocal: set,
     reload: reloadCanvas,
     status: setStatus,
-    currentColour: () => (erasing ? TRANSPARENT : colour),
+    currentColour: () => (isErasing() ? TRANSPARENT : colour),
   }, base)
 
   // Rectangle tools drag on the map, so panning has to yield while one is armed.
@@ -356,12 +383,13 @@ async function start() {
 
     const { x, y } = lonLatToPixel(lngLat.lng, lngLat.lat)
     if (!inBounds(x, y)) return
-    const c = erasing ? TRANSPARENT : colour
+    const c = isErasing() ? TRANSPARENT : colour
 
     // God mode writes straight through: no cooldown, no client-side budget.
     if (admin.unlocked) {
       if (admin.tool === 'inspect') { void admin.inspect(x, y); return }
       if (admin.tool !== 'paint') return   // the rectangle tools drag instead
+      if (board[idx(x, y)] === c) return
       set(x, y, c)
       draw()
       void admin.paint([[x, y, c]])
@@ -379,9 +407,13 @@ async function start() {
   map.on('click', (e) => { if (!rectTool()) place(e.lngLat) })
 
   map.on('mousemove', (e) => {
+    cursor = e.lngLat
     const { x, y } = lonLatToPixel(e.lngLat.lng, e.lngLat.lat)
     const next = inBounds(x, y) ? { x, y } : null
-    if (next?.x !== hover?.x || next?.y !== hover?.y) { hover = next; draw() }
+    const moved = next?.x !== hover?.x || next?.y !== hover?.y
+    if (moved) { hover = next; draw() }
+    // Only on a new cell, or a fast drag would queue the same pixel repeatedly.
+    if (stroking && moved && next) place(e.lngLat)
   })
   map.on('mouseout', () => { hover = null; draw() })
 
