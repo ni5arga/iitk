@@ -37,14 +37,24 @@ async function start() {
   const board = new Uint8Array(GRID_W * GRID_H)
   const idx = (x: number, y: number) => y * GRID_W + x
 
-  for (const [x, y, c] of seed.pixels) if (inBounds(x, y)) board[idx(x, y)] = c
+  // The set of cells that are actually painted. The canvas is 2.2M cells and
+  // ~99.8% empty, so drawing walks this instead of the viewport — which is what
+  // lets the art stay visible zoomed out, where a viewport sweep would be
+  // millions of cells per frame.
+  const painted = new Set<number>()
+  function set(x: number, y: number, c: number) {
+    if (!inBounds(x, y)) return
+    const i = idx(x, y)
+    board[i] = c
+    if (c === TRANSPARENT) painted.delete(i); else painted.add(i)
+  }
+
+  for (const [x, y, c] of seed.pixels) set(x, y, c)
 
   /** Seed is the floor; server chunks paint over it. */
   function applyChunks(chunks: Record<string, string>) {
     for (const packed of Object.values(chunks)) {
-      for (const p of unpackChunk(packed)) {
-        if (inBounds(p.x, p.y)) board[idx(p.x, p.y)] = p.c
-      }
+      for (const p of unpackChunk(packed)) set(p.x, p.y, p.c)
     }
   }
 
@@ -140,35 +150,30 @@ async function start() {
     g.setTransform(dpr, 0, 0, dpr, 0, 0)
     g.clearRect(0, 0, innerWidth, innerHeight)
 
-    // Only walk the grid cells actually on screen.
     const b = map.getBounds()
     const nw = lonLatToPixel(b.getWest(), b.getNorth())
     const se = lonLatToPixel(b.getEast(), b.getSouth())
-    const x0 = Math.max(0, nw.x - 1), y0 = Math.max(0, nw.y - 1)
-    const x1 = Math.min(GRID_W - 1, se.x + 1), y1 = Math.min(GRID_H - 1, se.y + 1)
-    if (x1 < x0 || y1 < y0) return
+    const x0 = nw.x - 1, y0 = nw.y - 1, x1 = se.x + 1, y1 = se.y + 1
 
-    // A whole-grid sweep at low zoom would be millions of cells per frame.
-    if ((x1 - x0) * (y1 - y0) > 400_000) return
-
-    const [lonA, latA] = pixelToLonLat(x0, y0)
-    const [lonB, latB] = pixelToLonLat(x0 + 1, y0 + 1)
+    // Screen size of one cell, taken from two adjacent grid corners.
+    const [lonA, latA] = pixelToLonLat(0, 0)
+    const [lonB, latB] = pixelToLonLat(1, 1)
     const a = map.project([lonA, latA])
     const bb = map.project([lonB, latB])
-    const sw = Math.abs(bb.x - a.x)
-    const sh = Math.abs(bb.y - a.y)
-    if (sw < 0.6) return // sub-pixel: nothing legible to draw
+    // Never below a visible dot: zoomed right out the art should still read as
+    // coloured marks on the campus rather than disappearing entirely.
+    const sw = Math.max(Math.abs(bb.x - a.x), 1.5)
+    const sh = Math.max(Math.abs(bb.y - a.y), 1.5)
 
-    for (let y = y0; y <= y1; y++) {
-      for (let x = x0; x <= x1; x++) {
-        const c = board[idx(x, y)]!
-        if (c === TRANSPARENT) continue
-        const [lon, lat] = pixelToLonLat(x, y)
-        const pt = map.project([lon, lat])
-        g.fillStyle = PALETTE[c]!
-        // +1 closes the hairline seams between adjacent cells.
-        g.fillRect(pt.x, pt.y, sw + 1, sh + 1)
-      }
+    for (const i of painted) {
+      const x = i % GRID_W
+      const y = (i - x) / GRID_W
+      if (x < x0 || x > x1 || y < y0 || y > y1) continue
+      const [lon, lat] = pixelToLonLat(x, y)
+      const pt = map.project([lon, lat])
+      g.fillStyle = PALETTE[board[i]!]!
+      // +1 closes the hairline seams between adjacent cells.
+      g.fillRect(pt.x, pt.y, sw + 1, sh + 1)
     }
 
     if (hover && sw >= 4) {
@@ -261,7 +266,7 @@ async function start() {
       }
       if (!res.ok) {
         // The server rejected them, so roll the optimistic paint back.
-        for (const p of batch) board[idx(p.x, p.y)] = 0
+        for (const p of batch) set(p.x, p.y, TRANSPARENT)
         draw()
         if (typeof data.cooldownUntil === 'number') cooldownUntil = data.cooldownUntil
         if (typeof data.remaining === 'number') remaining = data.remaining
@@ -288,7 +293,7 @@ async function start() {
     const c = erasing ? TRANSPARENT : colour
     if (board[idx(x, y)] === c) return
 
-    board[idx(x, y)] = c            // optimistic: show it immediately
+    set(x, y, c)                    // optimistic: show it immediately
     draw()
     queue.push({ x, y, c })
     if (!flushTimer) flushTimer = setTimeout(flush, 180)
