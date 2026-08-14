@@ -400,8 +400,51 @@ async function start() {
     map.once('styledata', () => { fillLabels(); draw() })
   })
 
+  /** Bounding box of everything painted, as lon/lat. */
+  function artBounds(): maplibregl.LngLatBoundsLike | null {
+    if (!painted.size) return null
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+    for (const i of painted) {
+      const x = i % GRID_W, y = (i - x) / GRID_W
+      if (x < x0) x0 = x
+      if (x > x1) x1 = x
+      if (y < y0) y0 = y
+      if (y > y1) y1 = y
+    }
+    const [wLon, nLat] = pixelToLonLat(x0 - 4, y0 - 4)
+    const [eLon, sLat] = pixelToLonLat(x1 + 5, y1 + 5)
+    return [[wLon, sLat], [eLon, nLat]]
+  }
+
+  /**
+   * Remember where you were, in the URL. A canvas this size is unusable without
+   * it — you cannot share a spot, and a reload throws away whatever you found.
+   */
+  function readHash(): { lon: number; lat: number; zoom: number } | null {
+    const m = /^#(\d+(?:\.\d+)?)\/(-?\d+\.\d+)\/(-?\d+\.\d+)$/.exec(location.hash)
+    return m ? { zoom: +m[1]!, lat: +m[2]!, lon: +m[3]! } : null
+  }
+
+  function writeHash() {
+    const c = map.getCenter()
+    const h = `#${map.getZoom().toFixed(2)}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`
+    history.replaceState(null, '', h)
+  }
+  map.on('moveend', writeHash)
+
   map.on('load', () => {
     fillLabels()
+
+    // Opening on an empty patch of campus made the art look absent — it was
+    // simply 980 m away. Frame everything that has been painted instead, unless
+    // the URL already says where to go.
+    const from = readHash()
+    if (from) {
+      map.jumpTo({ center: [from.lon, from.lat], zoom: from.zoom })
+    } else {
+      const b = artBounds()
+      if (b) map.fitBounds(b, { padding: 60, maxZoom: 15.4, animate: false })
+    }
     boot.classList.add('gone')
     updateHint()
     updateBudget()
