@@ -164,6 +164,12 @@ body.can-paint .maplibregl-canvas { cursor: crosshair; }
   border-radius: 7px;
   box-shadow: var(--lift);
   font-size: 12px;
+  /* The panel is `position: fixed`, so anything past the bottom edge would be
+     unreachable — the page cannot scroll to it. With the IP editor open it is
+     ~460px, which already overflows a landscape phone. Scroll inside instead. */
+  max-height: calc(100dvh - var(--pad) * 2 - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 #px-admin[hidden] { display: none; }
 
@@ -201,6 +207,37 @@ body.admin::after {
 }
 .ad-ban { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .ad-ban span { font-size: 10px; color: var(--fg-3); }
+
+/* Campus IP whitelist editor. */
+.ad-ip { display: grid; gap: 6px; }
+.ad-ip label { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; }
+.ad-ip label.ad-check { justify-content: flex-start; }
+.ad-ip input[type="number"] {
+  width: 74px;
+  padding: 3px 5px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 11px;
+}
+.ad-ip textarea {
+  width: 100%;
+  padding: 5px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  /* One range per line, and long IPv6 prefixes must not force the panel wider. */
+  resize: vertical;
+  white-space: pre;
+  overflow-x: auto;
+}
+.ad-ip .ad-meta { font-size: 10px; color: var(--fg-3); }
+#px-admin button.go { color: var(--accent); border-color: var(--accent); }
 
 @media (max-width: 760px) {
   #px-admin { left: var(--pad); right: var(--pad); width: auto; }

@@ -159,6 +159,33 @@ flags and a few chibi characters anchored to real buildings.
 Open to everyone — no login. Abuse is handled by **rate limiting per IP**:
 30 pixels, then a 60-second cooldown, and at most 12 pixels per request.
 
+### Campus IP whitelist
+
+Requests from IIT Kanpur get a much larger budget — **500 pixels a minute** by
+default instead of 30. Ranges and budget are editable live from **Campus IPs**
+in the admin panel; the values below are only the fallback when nothing is
+stored.
+
+| Range | |
+|---|---|
+| `202.3.77.0/24` | campus network (legacy/primary) |
+| `103.246.106.0/24` | IIT Kanpur |
+| `161.248.106.0/24` | IIT Kanpur |
+| `2001:df0:92::/48` | campus network, IPv6 |
+
+Only globally routable ranges are listed, and that is deliberate. Cloudflare
+reports the *public* source address in `cf-connecting-ip`, so a private range —
+`172.24/16`, `172.31.0.0/17`, `10/8` — can never appear there however much of
+campus sits behind it; those hosts reach us NATed out through the blocks above.
+Adding them would be config that quietly matches nothing. `172.16/12` is shared
+address space and emphatically not all IITK, so it is not whitelisted either.
+
+Matching is a real bit-prefix comparison over both families, with IPv4-mapped
+IPv6 (`::ffff:202.3.77.5`) folded down so it still matches the v4 rule. The
+smoke suite pins the behaviour in both directions — inside the range and just
+outside it — because a whitelist that is too wide hands 500/min to the open
+internet, and one that is too narrow throttles campus to 30.
+
 The client is not trusted. Position, colour index and budget are all re-checked
 server-side, so a crafted request cannot paint outside the grid, invent a
 colour, or skip the cooldown.
@@ -222,6 +249,9 @@ post '{"op":"clearRect","x":700,"y":800,"w":40,"h":40}'  # erase a region
 post '{"op":"fillRect","x":700,"y":800,"w":40,"h":40,"c":5}'
 post '{"op":"paint","pixels":[[700,800,8],[701,800,8]]}' # stamp art over it
 post '{"op":"clearAll"}'                                 # wipe user pixels
+post '{"op":"iprules"}'                                  # read the campus whitelist
+post '{"op":"setIprules","rules":{"enabled":true,"burst":500,"cooldown":60,
+  "cidrs":["202.3.77.0/24","2001:df0:92::/48"]}}'        # replace it
 post '{"op":"bans"}'                                     # list
 post '{"op":"ban","id":"a1b2c3d4e5"}'                    # id comes from the log
 post '{"op":"unban","id":"a1b2c3d4e5"}'

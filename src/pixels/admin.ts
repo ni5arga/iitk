@@ -11,6 +11,14 @@
 
 import { convert, decode, DEFAULTS, type ConvertOptions } from './import'
 
+/** Mirrors the shape the admin route reads and writes. */
+export interface IpRules {
+  enabled: boolean
+  burst: number
+  cooldown: number
+  cidrs: string[]
+}
+
 const KEY = 'campusmap.pixels.admin'
 
 /** A converted image floating over the canvas, not yet committed. */
@@ -154,8 +162,40 @@ export class Admin {
       <div class="ad-row">
         <button data-act="import">Import image…</button>
       </div>
+      <div class="ad-row">
+        <button data-act="iprules">Campus IPs</button>
+      </div>
       ${this.source ? this.importControls() : ''}
       <div class="ad-out">${extra}</div>`
+  }
+
+  /**
+   * Which ranges get the campus budget, and how big it is.
+   *
+   * Only publicly routable ranges are worth listing: Cloudflare reports the
+   * public source address, so an RFC1918 entry can never match anything.
+   */
+  private ipForm(r: IpRules, note = '') {
+    const esc = (s: string) => s.replace(/[<&]/g, (c) => (c === '<' ? '&lt;' : '&amp;'))
+    return `
+      <div class="ad-ip">
+        <label class="ad-check">
+          <input type="checkbox" data-ip="enabled" ${r.enabled ? 'checked' : ''}>
+          whitelist on
+        </label>
+        <label>pixels
+          <input type="number" data-ip="burst" min="1" max="100000" value="${r.burst}"></label>
+        <label>every (s)
+          <input type="number" data-ip="cooldown" min="1" max="86400" value="${r.cooldown}"></label>
+        <textarea data-ip="cidrs" rows="5" spellcheck="false"
+          aria-label="Whitelisted ranges, one CIDR per line"
+          placeholder="one CIDR per line">${esc(r.cidrs.join('\n'))}</textarea>
+        <div class="ad-row">
+          <button data-act="saveIp" class="go">Save</button>
+          <button data-act="closeIp">Close</button>
+        </div>
+        <div class="ad-meta">${esc(note)}</div>
+      </div>`
   }
 
   /** Live controls for a loaded image. Every change re-converts and repaints
@@ -282,6 +322,36 @@ export class Admin {
 
     switch (el.dataset.act) {
       case 'lock': this.lock(); break
+
+      case 'iprules': {
+        const r = await this.call('iprules')
+        if (r?.ok) this.render(this.ipForm(r.rules))
+        else this.render(`<code>${r?.error ?? 'could not read ip rules'}</code>`)
+        break
+      }
+
+      case 'closeIp': this.render(); break
+
+      case 'saveIp': {
+        const q = (s: string) => this.panel.querySelector(s) as HTMLInputElement | HTMLTextAreaElement
+        const rules: IpRules = {
+          enabled: (q('[data-ip="enabled"]') as HTMLInputElement).checked,
+          burst: Number(q('[data-ip="burst"]').value),
+          cooldown: Number(q('[data-ip="cooldown"]').value),
+          cidrs: q('[data-ip="cidrs"]').value.split('\n').map((s) => s.trim()).filter(Boolean),
+        }
+        const r = await this.call('setIprules', { rules })
+        // On rejection re-render what they typed, not what the server still
+        // holds — otherwise a typo silently discards the whole edit.
+        if (r?.ok) {
+          this.render(this.ipForm(r.rules, 'saved'))
+          this.host.status(
+            `campus ips · ${r.rules.enabled ? 'on' : 'off'} · ${r.rules.burst}/${r.rules.cooldown}s`, '')
+        } else {
+          this.render(this.ipForm(rules, r?.error ?? 'save failed'))
+        }
+        break
+      }
       case 'stats': {
         const r = await this.call('stats')
         this.render(r ? `<code>${r.pixels} pixels · ${r.chunks} chunks · ${r.bans} bans</code>` : '')

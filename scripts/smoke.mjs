@@ -193,6 +193,59 @@ ok(worst <= diagonal, `points land inside their cell (worst ${worst.toFixed(2)}m
 ok(seed.pixels.length > 1000, `seed art present (${seed.pixels.length} pixels)`)
 ok(seed.placed.length >= 10, `${seed.placed.length} seeded pieces`)
 
+/* ── campus ip whitelist ─────────────────────────────────────────────────── */
+
+// A whitelist that is wrong in either direction is a real problem: too narrow
+// and campus gets the public 30-pixel budget, too wide and 500/min is handed to
+// the open internet. The bit-prefix maths is worth pinning down.
+console.log('\nip whitelist')
+const IP_TMP = join(ROOT, 'node_modules/.cache/smoke-ip.mjs')
+await build({
+  entryPoints: [join(ROOT, 'functions/api/pixels/[[path]].ts')],
+  bundle: true, format: 'esm', platform: 'node', outfile: IP_TMP, logLevel: 'silent',
+})
+const FN = await import(IP_TMP + `?t=${Date.now()}`)
+const hit = (ip, cidr) => {
+  const b = FN.parseIp(ip)
+  return !!b && FN.inCidr(b, cidr)
+}
+
+const IITK = ['202.3.77.0/24', '103.246.106.0/24', '161.248.106.0/24', '2001:df0:92::/48']
+const inAny = (ip) => IITK.some((c) => hit(ip, c))
+
+for (const ip of ['202.3.77.1', '202.3.77.255', '103.246.106.77', '161.248.106.9']) {
+  ok(inAny(ip), `${ip} is campus`)
+}
+// The /24s must not bleed into the neighbouring block.
+for (const ip of ['202.3.78.1', '103.246.107.1', '161.248.105.255', '8.8.8.8', '1.1.1.1']) {
+  ok(!inAny(ip), `${ip} is not campus`)
+}
+ok(inAny('2001:df0:92::1'), '2001:df0:92::1 is campus (v6)')
+ok(inAny('2001:df0:92:abcd:1:2:3:4'), 'a full v6 address inside the /48 is campus')
+ok(!inAny('2001:df0:93::1'), '2001:df0:93::1 is outside the /48')
+ok(!inAny('2001:df0:0092::1') === false, 'leading zeroes in a hextet still match')
+
+// An IPv4-mapped v6 address is the same host as its v4 form.
+ok(inAny('::ffff:202.3.77.5'), 'ipv4-mapped v6 folds down to the v4 rule')
+// Families must not cross-match.
+ok(!hit('202.3.77.1', '2001:df0:92::/48'), 'v4 address does not match a v6 range')
+ok(!hit('2001:df0:92::1', '202.3.77.0/24'), 'v6 address does not match a v4 range')
+
+// Prefixes that are not on a byte boundary are where naive code breaks.
+ok(hit('172.31.0.1', '172.31.0.0/17') && !hit('172.31.128.1', '172.31.0.0/17'),
+  '/17 splits on the correct bit')
+ok(hit('10.1.2.3', '10.0.0.0/8') && !hit('11.1.2.3', '10.0.0.0/8'), '/8 matches one octet')
+ok(hit('1.2.3.4', '0.0.0.0/0'), '/0 matches everything')
+ok(hit('1.2.3.4', '1.2.3.4') && !hit('1.2.3.5', '1.2.3.4'), 'a bare address matches only itself')
+
+// Garbage must be rejected, not coerced into something that matches.
+for (const bad of ['', 'nonsense', '999.1.1.1', '1.2.3', '1.2.3.4.5', ':::1', '2001:df0:92::/x']) {
+  ok(!hit(bad, '0.0.0.0/0') || bad === '', `rejects ${JSON.stringify(bad)}`)
+}
+ok(FN.parseIp('999.1.1.1') === null, 'octet > 255 rejected')
+ok(FN.parseIp('1.2.3') === null, 'short v4 rejected')
+ok(!hit('202.3.77.1', '202.3.77.0/33'), 'prefix longer than the family is rejected')
+
 const bad = seed.pixels.filter(([x, y, c]) =>
   !PX.inBounds(x, y) || !Number.isInteger(c) || c <= 0 || c >= PX.PALETTE.length)
 ok(bad.length === 0, 'every seed pixel is in bounds with a real colour',

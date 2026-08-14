@@ -93,6 +93,148 @@ async function painterId(req: Request): Promise<string> {
     .map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+/* ── campus ip whitelist ─────────────────────────────────────────────────── */
+
+/**
+ * Addresses that get the campus budget instead of the public one.
+ *
+ * Only globally routable ranges are listed. Cloudflare reports the public
+ * source address in `cf-connecting-ip`, so an RFC1918 range — 172.24/16,
+ * 172.31.0.0/17, 10/8 — can never appear here no matter how much of campus sits
+ * behind it; those hosts reach us NATed out through the blocks below. Listing
+ * them would be dead config that quietly matches nothing, and 172.16/12 is
+ * shared address space that is emphatically not all IITK.
+ *
+ * Editable at runtime from the admin dashboard; this is only the fallback.
+ */
+export interface IpRules {
+  enabled: boolean
+  /** Pixels a campus address may paint before its cooldown. */
+  burst: number
+  /** Cooldown in seconds once the burst is spent. */
+  cooldown: number
+  cidrs: string[]
+}
+
+const DEFAULT_IP_RULES: IpRules = {
+  enabled: true,
+  burst: 500,
+  cooldown: 60,
+  cidrs: [
+    '202.3.77.0/24',      // IIT Kanpur campus network (legacy/primary)
+    '103.246.106.0/24',   // IIT Kanpur
+    '161.248.106.0/24',   // IIT Kanpur
+    '2001:df0:92::/48',   // IIT Kanpur campus network, IPv6
+  ],
+}
+
+function parseIp4(s: string): Uint8Array | null {
+  const p = s.split('.')
+  if (p.length !== 4) return null
+  const out = new Uint8Array(4)
+  for (let i = 0; i < 4; i++) {
+    if (!/^\d{1,3}$/.test(p[i]!)) return null
+    const n = Number(p[i])
+    if (n > 255) return null
+    out[i] = n
+  }
+  return out
+}
+
+function parseIp6(input: string): Uint8Array | null {
+  let s = input
+  const zone = s.indexOf('%')
+  if (zone > -1) s = s.slice(0, zone)
+
+  // A dotted tail ("::ffff:1.2.3.4") is two hextets in disguise. Rewriting it
+  // keeps the rest of the parse to a single uniform form.
+  if (s.includes('.')) {
+    const c = s.lastIndexOf(':')
+    if (c < 0) return null
+    const v4 = parseIp4(s.slice(c + 1))
+    if (!v4) return null
+    s = s.slice(0, c + 1) +
+      ((v4[0]! << 8) | v4[1]!).toString(16) + ':' + ((v4[2]! << 8) | v4[3]!).toString(16)
+  }
+
+  const halves = s.split('::')
+  if (halves.length > 2) return null
+  const head = halves[0] ? halves[0].split(':') : []
+  const tail = halves.length === 2 && halves[1] ? halves[1].split(':') : []
+  const fill = 8 - head.length - tail.length
+  if (fill < 0 || (halves.length === 1 && fill !== 0)) return null
+  const groups = [...head, ...Array<string>(halves.length === 2 ? fill : 0).fill('0'), ...tail]
+  if (groups.length !== 8) return null
+
+  const out = new Uint8Array(16)
+  for (let i = 0; i < 8; i++) {
+    if (!/^[0-9a-fA-F]{1,4}$/.test(groups[i]!)) return null
+    const n = parseInt(groups[i]!, 16)
+    out[i * 2] = n >> 8
+    out[i * 2 + 1] = n & 0xff
+  }
+  return out
+}
+
+/** An IPv4-mapped IPv6 address is the same host as its IPv4 form, so fold it
+ *  down — otherwise `::ffff:202.3.77.9` would miss a 202.3.77.0/24 rule. */
+function normaliseIp(b: Uint8Array): Uint8Array {
+  const mapped = b.length === 16 && b[10] === 0xff && b[11] === 0xff &&
+    b.subarray(0, 10).every((x) => x === 0)
+  return mapped ? b.subarray(12) : b
+}
+
+export function parseIp(s: string): Uint8Array | null {
+  const t = s.trim()
+  if (!t) return null
+  const b = t.includes(':') ? parseIp6(t) : parseIp4(t)
+  return b ? normaliseIp(b) : null
+}
+
+/** Bit-prefix match. A bare address with no `/len` matches only itself. */
+export function inCidr(ip: Uint8Array, cidr: string): boolean {
+  const slash = cidr.indexOf('/')
+  const net = parseIp(slash < 0 ? cidr : cidr.slice(0, slash))
+  if (!net || net.length !== ip.length) return false
+  const bits = net.length * 8
+  const len = slash < 0 ? bits : Number(cidr.slice(slash + 1))
+  if (!Number.isInteger(len) || len < 0 || len > bits) return false
+
+  const whole = len >> 3
+  for (let i = 0; i < whole; i++) if (ip[i] !== net[i]) return false
+  const rest = len & 7
+  if (rest) {
+    const mask = (0xff << (8 - rest)) & 0xff
+    if ((ip[whole]! & mask) !== (net[whole]! & mask)) return false
+  }
+  return true
+}
+
+async function getIpRules(env: Env): Promise<IpRules> {
+  const raw = await getMeta(env, 'iprules', '')
+  if (!raw) return DEFAULT_IP_RULES
+  try {
+    const r = JSON.parse(raw) as Partial<IpRules>
+    return {
+      enabled: r.enabled ?? true,
+      burst: Number(r.burst) || DEFAULT_IP_RULES.burst,
+      cooldown: Number(r.cooldown) || DEFAULT_IP_RULES.cooldown,
+      cidrs: Array.isArray(r.cidrs) ? r.cidrs : DEFAULT_IP_RULES.cidrs,
+    }
+  } catch {
+    return DEFAULT_IP_RULES        // corrupt config must not stop the canvas
+  }
+}
+
+/** Whether this request comes from a whitelisted range, and the budget it earns. */
+function budgetFor(req: Request, rules: IpRules) {
+  const ip = rules.enabled ? parseIp(req.headers.get('cf-connecting-ip') ?? '') : null
+  const campus = !!ip && rules.cidrs.some((c) => inCidr(ip, c))
+  return campus
+    ? { campus, burst: rules.burst, cooldown: rules.cooldown }
+    : { campus, burst: BURST, cooldown: COOLDOWN_S }
+}
+
 /* ── canvas ──────────────────────────────────────────────────────────────── */
 
 /** Chunked exactly as before, so this migration is invisible to the client. */
@@ -195,12 +337,15 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 
   /* GET /api/pixels */
   if (request.method === 'GET' && path === '') {
-    const [chunks, seq, epoch] = await Promise.all([
-      readCanvas(e), getMeta(e, 'seq'), getMeta(e, 'epoch'),
+    const [chunks, seq, epoch, rules] = await Promise.all([
+      readCanvas(e), getMeta(e, 'seq'), getMeta(e, 'epoch'), getIpRules(e),
     ])
+    // Report the budget this caller actually gets, not the public default, so
+    // the on-campus counter does not start out lying about how much is left.
+    const { campus, burst, cooldown } = budgetFor(request, rules)
     return json({
       grid: { w: GRID_W, h: GRID_H, chunk: CHUNK },
-      burst: BURST, cooldown: COOLDOWN_S, maxPerRequest: MAX_PER_REQUEST,
+      burst, cooldown, campus, maxPerRequest: MAX_PER_REQUEST,
       seq: Number(seq), epoch, chunks,
     })
   }
@@ -249,6 +394,7 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     }
 
     const now = Date.now()
+    const { campus, burst, cooldown } = budgetFor(request, await getIpRules(e))
     const rl = await e.DB.prepare('SELECT n, until FROM limits WHERE id = ?')
       .bind(who).first<{ n: number; until: number }>() ?? { n: 0, until: 0 }
 
@@ -257,15 +403,15 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         429, { 'retry-after': String(Math.ceil((rl.until - now) / 1000)) })
     }
     if (rl.until && rl.until <= now) rl.n = 0     // cooldown served, budget refills
-    if (rl.n + pixels.length > BURST) {
+    if (rl.n + pixels.length > burst) {
       return json({
-        error: `only ${BURST - rl.n} left before a break`,
-        remaining: Math.max(0, BURST - rl.n), id: who,
+        error: `only ${burst - rl.n} left before a break`,
+        remaining: Math.max(0, burst - rl.n), id: who,
       }, 429)
     }
 
     const n = rl.n + pixels.length
-    const until = n >= BURST ? now + COOLDOWN_S * 1000 : 0
+    const until = n >= burst ? now + cooldown * 1000 : 0
     await e.DB.prepare(
       `INSERT INTO limits (id, n, until) VALUES (?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET n = excluded.n, until = excluded.until`,
@@ -275,8 +421,8 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     ctx.waitUntil(logPixels(e, who, pixels))
 
     return json({
-      ok: true, painted: pixels.length,
-      remaining: Math.max(0, BURST - n),
+      ok: true, painted: pixels.length, campus,
+      remaining: Math.max(0, burst - n),
       cooldownUntil: until || null, id: who,
     })
   }
@@ -389,10 +535,41 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
         return json({ ok: true, pixels: px?.n ?? 0, bans: bans?.n ?? 0, chunks: 0 })
       }
 
+      case 'iprules':
+        return json({ ok: true, rules: await getIpRules(e), defaults: DEFAULT_IP_RULES })
+
+      case 'setIprules': {
+        const r = (body.rules ?? {}) as Partial<IpRules>
+        const burst = Number(r.burst)
+        const cooldown = Number(r.cooldown)
+        if (!Number.isInteger(burst) || burst < 1 || burst > 100_000) {
+          return json({ error: 'burst must be 1–100000' }, 400)
+        }
+        if (!Number.isInteger(cooldown) || cooldown < 1 || cooldown > 86_400) {
+          return json({ error: 'cooldown must be 1–86400 seconds' }, 400)
+        }
+        const cidrs = (Array.isArray(r.cidrs) ? r.cidrs : [])
+          .map((c) => String(c).trim()).filter(Boolean)
+        if (cidrs.length > 64) return json({ error: 'at most 64 ranges' }, 400)
+        // Reject the whole edit rather than silently dropping a typo'd range —
+        // a whitelist that quietly lost an entry is worse than one that failed.
+        for (const c of cidrs) {
+          if (!parseIp(c.split('/')[0]!) || !inCidr(parseIp(c.split('/')[0]!)!, c)) {
+            return json({ error: `not a valid CIDR: ${c}` }, 400)
+          }
+        }
+        const rules: IpRules = { enabled: !!r.enabled, burst, cooldown, cidrs }
+        await setMeta(e, 'iprules', JSON.stringify(rules)).run()
+        ctx.waitUntil(logPixels(e, 'admin', [], `set ip rules · ${
+          rules.enabled ? 'on' : 'off'} · ${burst}/${cooldown}s · ${cidrs.length} ranges`))
+        return json({ ok: true, rules })
+      }
+
       default:
         return json({
           error: 'unknown op',
-          ops: ['clearRect', 'fillRect', 'paint', 'clearAll', 'ban', 'unban', 'bans', 'who', 'recent', 'stats'],
+          ops: ['clearRect', 'fillRect', 'paint', 'clearAll', 'ban', 'unban', 'bans',
+            'who', 'recent', 'stats', 'iprules', 'setIprules'],
         }, 400)
     }
   }
