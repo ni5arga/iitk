@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { PIXELS_ENABLED } from './shared/pixels-flag'
 
 /**
@@ -38,16 +39,16 @@ function pixelsGate(): Plugin {
       if (withPixels) return html
       return html.replace(/\s*<a id="pixels-btn"[\s\S]*?<\/a>/, '')
     },
-    // Emitted only while the canvas is down, so an existing /pixels link lands
-    // on the map rather than a bare 404. Kept here rather than in public/ so
-    // the rule cannot outlive the takedown it belongs to.
+    // While the canvas is down, /pixels serves a standalone notice instead of
+    // the app. A redirect to the homepage was the earlier behaviour and it was
+    // worse: someone following a link just landed on the map with no idea why,
+    // and it read as a broken link rather than a feature that is not finished.
     generateBundle() {
       if (withPixels) return
       this.emitFile({
         type: 'asset',
-        fileName: '_redirects',
-        source: '# The pixel canvas is under development and off public view.\n' +
-          '/pixels     /  302\n/pixels/*   /  302\n',
+        fileName: 'pixels/index.html',
+        source: readFileSync(resolve(__dirname, 'pixels/offline.html'), 'utf8'),
       })
     },
   }

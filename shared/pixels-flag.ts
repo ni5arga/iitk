@@ -15,4 +15,4 @@
  *     this constant at runtime, so the API can be killed from the dashboard
  *     without waiting for a deploy.
  */
-export const PIXELS_ENABLED = true
+export const PIXELS_ENABLED = false

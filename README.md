@@ -145,13 +145,15 @@ hesitate to tag me in the issue/PR thread.
 
 ## Pixels
 
-> **Early days.** Expect rough edges. The whole feature — page, link and API —
-> is behind one switch, `PIXELS_ENABLED` in [`shared/pixels-flag.ts`](shared/pixels-flag.ts).
-> Set it to `false` and the build ships no `/pixels` page, no link from the map,
-> and the API answers 404; `/pixels` then redirects to the homepage. A
-> `PIXELS_ENABLED` variable on the Pages project (`"0"` / `"1"`) overrides the
-> constant at runtime, so it can be pulled from the dashboard without a deploy.
-> `PIXELS=1 npm run dev` forces the page on locally while it is off.
+> **Not live.** The pixel canvas is experimental and in development. It is off
+> in production: there is no link from the map, `/pixels` serves a short notice
+> saying so, and the API answers 404. The code is all here and unchanged.
+>
+> One switch controls it — `PIXELS_ENABLED` in
+> [`shared/pixels-flag.ts`](shared/pixels-flag.ts). A `PIXELS_ENABLED` variable
+> on the Pages project (`"0"` / `"1"`) overrides the constant at runtime, so it
+> can be flipped from the dashboard without a deploy. `PIXELS=1 npm run dev`
+> runs the real thing locally.
 
 `/pixels` is a shared canvas laid over the campus: a fixed grid at **2 m per
 pixel**, 1495 × 1503 cells, painted by anyone who turns up. Seeded with pride

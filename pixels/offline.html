@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d10">
+<meta name="robots" content="noindex">
+<title>pixels · not live · iitk.nis.pet</title>
+<meta name="description" content="The pixel canvas is an experimental, in-development feature and is not live in production.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0d10'/><rect x='7' y='7' width='7' height='7' fill='%23ec1f80'/><rect x='17' y='7' width='7' height='7' fill='%2313e67b'/><rect x='7' y='17' width='7' height='7' fill='%234093e4'/><rect x='17' y='17' width='7' height='7' fill='%23f9dd3b'/></svg>">
+<script>
+  try {
+    var t = localStorage.getItem('campusmap.theme')
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark')
+  } catch (e) { document.documentElement.setAttribute('data-theme', 'dark') }
+</script>
+<!-- Every style is inline and every colour is literal. This page exists to be
+     shown when the canvas is not shipped, so it must not depend on a stylesheet
+     that this build no longer emits. -->
+<style>
+  :root {
+    --bg: #0b0d10; --bg-1: #101318; --line: #2c3240;
+    --fg: #e6edf3; --fg-2: #98a1ae; --fg-3: #656e7b; --accent: #61d47c;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  :root[data-theme="light"] {
+    --bg: #e9ebef; --bg-1: #fbfbfc; --line: #ccd1d9;
+    --fg: #2b313a; --fg-2: #59616d; --fg-3: #79818d; --accent: #1f8f42;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    width: 100%;
+    max-width: 440px;
+    padding: 26px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .tag {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  h1 { margin: 0 0 10px; font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+  p { margin: 0 0 12px; color: var(--fg-2); }
+  p:last-of-type { margin-bottom: 20px; }
+  .art {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    width: 108px;
+    margin: 0 0 18px;
+  }
+  .art i { aspect-ratio: 1; border-radius: 2px; background: var(--line); }
+  nav { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  a { color: var(--fg); text-decoration-color: var(--line); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: currentColor; }
+  a.go { color: var(--accent); }
+  .sub { font-size: 13px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <main>
+    <div class="art" aria-hidden="true">
+      <i style="background:#ec1f80"></i><i></i><i style="background:#13e67b"></i><i></i><i style="background:#4093e4"></i><i></i>
+      <i></i><i style="background:#f9dd3b"></i><i></i><i style="background:#ec1f80"></i><i></i><i style="background:#13e67b"></i>
+      <i style="background:#4093e4"></i><i></i><i style="background:#f9dd3b"></i><i></i><i style="background:#ec1f80"></i><i></i>
+    </div>
+
+    <span class="tag">not live</span>
+    <h1>Pixels is still being built</h1>
+    <p>
+      The shared pixel canvas over campus is an <strong>experimental,
+      in-development feature</strong>. It is not live in production, and nothing
+      you draw here would be saved.
+    </p>
+    <p class="sub">
+      The code is all in the repo — it just is not switched on yet.
+    </p>
+
+    <nav>
+      <a class="go" href="/">&larr; Back to the map</a>
+      <a href="https://github.com/ni5arga/iitk" target="_blank" rel="noopener">Source code</a>
+    </nav>
+  </main>
+</body>
+</html>
