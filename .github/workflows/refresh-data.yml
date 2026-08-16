@@ -1,8 +1,14 @@
 name: refresh data
 
 # Re-pulls OpenStreetMap, the IITK faculty directory and campusmess, then opens
-# a PR if anything changed. A PR rather than a direct push, so a source going
-# weird (markup change, empty response) never silently lands on the live site.
+# a PR if anything changed and merges it.
+#
+# The PR is the audit trail, not the safety gate — nobody reads a weekly
+# dependabot-shaped PR, and one sitting unmerged means the site quietly serves
+# month-old menus. The gate is the two checks below it: absolute floors catch a
+# source returning nothing, and a churn guard catches the subtler failure where
+# a markup change silently halves the roll. Both run *before* the PR is opened,
+# so a bad pull fails the run instead of landing.
 
 on:
   schedule:
@@ -31,8 +37,13 @@ jobs:
 
       - run: npm ci
 
+      # `if: inputs.osm` was wrong: inputs only exist on workflow_dispatch, so on
+      # the weekly schedule this was always false and OpenStreetMap was never
+      # refetched at all — the "weekly refresh" only ever moved faculty and mess
+      # while the basemap sat at whatever was last pulled by hand. Scheduled runs
+      # now always refetch; the input is there so a manual run can skip it.
       - name: Refetch OpenStreetMap
-        if: inputs.osm
+        if: github.event_name != 'workflow_dispatch' || inputs.osm
         run: npm run fetch -- --force
 
       - name: Refetch faculty + mess
@@ -53,10 +64,52 @@ jobs:
             console.log(`ok: ${c.pois.length} pois, ${c.faculty.items.length} faculty, ${c.mess.items.length} menus`);
           '
 
+      # Floors catch a source returning nothing. This catches the subtler one:
+      # a markup change that still parses but quietly drops half the rows. With
+      # the PR merging itself, this is the check standing in for a human skim.
+      - name: Guard against a source shrinking
+        run: |
+          node -e '
+            const { execSync } = require("node:child_process")
+            const { readFileSync } = require("node:fs")
+
+            // Every input file, not just the web scrapes. An Overpass mirror
+            // answering with a truncated result still parses as valid JSON, so
+            // only the count catches it.
+            const files = [
+              ["data/live/faculty.json", (d) => d.items.length],
+              ["data/live/mess.json",    (d) => d.items.length],
+              ["data/raw/pois.json",     (d) => d.elements.length],
+              ["data/raw/buildings.json",(d) => d.elements.length],
+              ["data/raw/highways.json", (d) => d.elements.length],
+              ["data/raw/land.json",     (d) => d.elements.length],
+              ["data/raw/boundary.json", (d) => d.elements.length],
+            ]
+            let bad = false
+            for (const [path, count] of files) {
+              let before
+              try {
+                before = count(JSON.parse(execSync(`git show HEAD:${path}`,
+                  { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 })))
+              } catch { console.log(`${path}: new file, nothing to compare`); continue }
+              const after = count(JSON.parse(readFileSync(path, "utf8")))
+              const lost = before ? (before - after) / before : 0
+              console.log(`${path}: ${before} -> ${after}`)
+              // 10% covers ordinary churn — a handful of nodes retagged or a
+              // building merged — while still catching a half-empty response.
+              if (lost > 0.1) {
+                console.error(`FAIL: ${path} lost ${(lost * 100).toFixed(1)}% of its rows`)
+                bad = true
+              }
+            }
+            if (bad) process.exit(1)
+          '
+
       - name: Smoke test the refreshed data
         run: npm run smoke
 
       - uses: peter-evans/create-pull-request@v6
+        id: pr
         with:
           branch: chore/refresh-data
           title: 'chore: refresh campus data'
@@ -64,13 +117,29 @@ jobs:
           body: |
             Automated weekly pull of the upstream sources.
 
-            - OpenStreetMap (`data/raw/`) — only when run with the `osm` input
+            - OpenStreetMap (`data/raw/`)
             - IITK faculty directory (`data/live/faculty.json`)
             - campusmess.in (`data/live/mess.json`)
 
             Counts passed the sanity floor. Skim the diff for anything odd
             (a source changing its markup usually shows up as a mass deletion)
-            before merging.
+            if anything looks off after the fact.
           # public/data is generated and gitignored — only the inputs are committed.
           add-paths: data/
           delete-branch: true
+
+      # Merged rather than left for review. Everything above is the gate; a PR
+      # nobody merges just means the site serves stale menus. Squashed so the
+      # history stays one commit per refresh.
+      #
+      # Needs "Allow GitHub Actions to create and approve pull requests"
+      # (Settings > Actions > General). Without it the run dies right here with
+      # "GitHub Actions is not permitted to create or approve pull requests"
+      # after having already pushed the branch.
+      - name: Merge it
+        if: steps.pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
+            --squash --delete-branch --repo ${{ github.repository }}

@@ -17,6 +17,10 @@ const ok = (cond, label, detail = '') => {
   if (cond) console.log(`  ok   ${label}${detail ? ` — ${detail}` : ''}`)
   else { failures++; console.log(`  FAIL ${label}${detail ? ` — ${detail}` : ''}`) }
 }
+/** Worth a human's attention, but not worth failing a build over. Upstream
+ *  churn we do not control lands here; things we do control get `ok`. */
+const note = (label, detail = '') =>
+  console.log(`  note ${label}${detail ? ` — ${detail}` : ''}`)
 
 await build({
   entryPoints: [join(ROOT, 'src/search/engine.ts')],
@@ -192,6 +196,107 @@ ok(worst <= diagonal, `points land inside their cell (worst ${worst.toFixed(2)}m
 
 ok(seed.pixels.length > 1000, `seed art present (${seed.pixels.length} pixels)`)
 ok(seed.placed.length >= 10, `${seed.placed.length} seeded pieces`)
+
+/* ── duplicate + overlap checks ──────────────────────────────────────────── */
+
+// Two ways the place list goes wrong, both invisible until someone spots two
+// pins stacked on the map.
+//
+//   1. A hand-added place in data/curated stops being hand-only, because OSM
+//      gained the same feature. The build already drops the curated row and
+//      warns, but nothing said it out loud in CI.
+//   2. OSM itself carries one thing twice — typically a node and an area for
+//      the same building, tagged slightly differently so no dedupe catches it.
+//
+// The thresholds are the whole design here. Campus genuinely has street lights
+// 20 m apart and two ATMs in one lobby, so distance alone proves nothing; the
+// line is drawn where a second copy stops being plausible as a second object.
+console.log('\nduplicates and overlaps')
+
+const normName = (s) => (s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+const metres = (a, b) =>
+  Math.hypot((a.lat - b.lat) * 111320, (a.lon - b.lon) * 99600)
+
+const curatedRaw = JSON.parse(
+  await readFile(join(ROOT, 'data/curated/places.json'), 'utf8')).items ?? []
+
+// Fully under our control, so these fail rather than warn.
+const byId = new Map()
+const byName = new Map()
+let curatedDupes = 0
+for (const p of curatedRaw) {
+  for (const [map, key] of [[byId, p.id], [byName, normName(p.name)]]) {
+    if (!key) continue
+    if (map.has(key)) { curatedDupes++; note(`curated duplicate: ${key}`) }
+    map.set(key, p)
+  }
+}
+ok(curatedDupes === 0, `no duplicate ids or names in curated places (${curatedRaw.length} entries)`)
+
+const placed = campus.pois
+const curated = placed.filter((p) => p.src !== 'osm')
+const fromOsm = placed.filter((p) => p.src === 'osm')
+
+// A curated row whose name OSM now carries is dead weight — the build already
+// drops it, so this is a cleanup prompt, not a failure. Failing here would mean
+// upstream adding a building could break an unattended data refresh.
+const osmNames = new Set(fromOsm.map((p) => normName(p.name)))
+let superseded = 0
+for (const p of curatedRaw) {
+  if (osmNames.has(normName(p.name))) {
+    superseded++
+    note(`"${p.name}" is now in OSM — delete it from data/curated/places.json`)
+  }
+}
+if (!superseded) ok(true, `no curated place is shadowed by OSM (${curated.length} curated on the map)`)
+
+// A curated pin sitting on top of an OSM one under a different name is the same
+// duplication wearing a disguise, and name matching alone will never see it.
+let curatedOverlap = 0
+for (const p of curated) {
+  for (const q of fromOsm) {
+    if (metres(p, q) < 12) {
+      curatedOverlap++
+      note(`curated "${p.name}" is ${metres(p, q).toFixed(1)}m from OSM "${q.name}"`)
+    }
+  }
+}
+if (!curatedOverlap) ok(true, 'no curated place sits on top of an OSM feature')
+
+// Same name, near-identical position: one feature entered twice. Two metres is
+// deliberately tight — it is below the width of anything that could be a
+// genuinely separate object sharing a name.
+const groups = new Map()
+for (const p of placed) {
+  if (!p.name) continue
+  const k = normName(p.name)
+  if (!groups.has(k)) groups.set(k, [])
+  groups.get(k).push(p)
+}
+const namePairs = []
+for (const list of groups.values()) {
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      const d = metres(list[i], list[j])
+      if (d < 25) namePairs.push({ a: list[i], b: list[j], d })
+    }
+  }
+}
+const stacked = namePairs.filter((p) => p.d < 2)
+for (const p of stacked) {
+  note(`stacked: "${p.a.name}" ${p.d.toFixed(1)}m — ${p.a.osm} / ${p.b.osm}`)
+}
+ok(stacked.length === 0, 'no two places share a name at the same spot')
+
+// One feature mapped as both a node and an area usually lands under two
+// different categories a few metres apart. Real enough to surface, too
+// upstream-dependent to fail on.
+const crossCat = namePairs.filter((p) => p.a.cat !== p.b.cat && p.d < 25)
+for (const p of crossCat) {
+  note(`double-mapped: "${p.a.name}" ${p.d.toFixed(1)}m — ${p.a.cat} vs ${p.b.cat} (${p.a.osm} / ${p.b.osm})`)
+}
+note(`${namePairs.length} same-name pairs within 25m`,
+  `${crossCat.length} across categories, ${namePairs.length - crossCat.length} plausible repeats`)
 
 /* ── campus ip whitelist ─────────────────────────────────────────────────── */
 
