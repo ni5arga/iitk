@@ -1,7 +1,7 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-08-11T22:32:25.710Z",
- "_note": "Public faculty directory published by IIT Kanpur. The listing page shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it is the full roll.",
+ "_fetched": "2026-08-16T20:46:01.713Z",
+ "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
   {
@@ -88,13 +88,7 @@
    "url": "https://www.iitk.ac.in/joydeep-dutta",
    "depts": [
     "Economic Sciences"
-   ],
-   "email": "jdutta@iitk.ac.in",
-   "phone": "0512-259-7568",
-   "web": "https://home.iitk.ac.in/~jdutta",
-   "office": "Economics Group",
-   "research": "Major Area : Optimization Theory.",
-   "qualification": "PhD (IIT Kharagpur)"
+   ]
   },
   {
    "name": "Kumar Alok",
@@ -2243,6 +2237,19 @@
    "qualification": "Ph.D, Indian Institute of Technology (IIT) Bombay, 2018"
   },
   {
+   "name": "Syed Feroz Hassan",
+   "title": "Assistant Professor, Department of Humanities and Social Sciences",
+   "dept": "Humanities and Social Sciences",
+   "url": "https://www.iitk.ac.in/feroz-hassan",
+   "depts": [
+    "Humanities and Social Sciences"
+   ],
+   "email": "feroz@iitk.ac.in",
+   "phone": "+91-512-679-2065",
+   "office": "Office FB626",
+   "qualification": "PhD (University of Michigan)"
+  },
+  {
    "name": "Gurumurthy Neelakantan",
    "title": "Emeritus Fellow, Department of Humanities and Social Sciences",
    "dept": "Humanities and Social Sciences",
@@ -2326,21 +2333,6 @@
    "office": "Office Motwani Building 603",
    "research": "My research focuses on the philosophy of Science, the relevance of Evolutionary Biological Theories for understanding the nature and origins of Perception, Cognition, the notion of Emergence, Causation (multi-level), Creativity, along with interests in the conceptual issues in Neurophilosophy, Neuroethics, and Genetics.",
    "qualification": "PhD (IIT Bombay)"
-  },
-  {
-   "name": "Mini Chandran",
-   "title": "Professor, Department of Humanities and Social Sciences",
-   "dept": "Humanities and Social Sciences",
-   "url": "https://www.iitk.ac.in/mini-chandran",
-   "depts": [
-    "Humanities and Social Sciences"
-   ],
-   "email": "minic@iitk.ac.in",
-   "phone": "0512-259-7191",
-   "web": "https://www.minichandran.com/",
-   "office": "Office FB 609,",
-   "research": "My primary areas of interest are Classical Sanskrit Aesthetic Theory, Literature and Censorship, Indian Literature in Translation, and Translation Studies.",
-   "qualification": "PhD (University of Kerala)"
   },
   {
    "name": "Kamal Krishna Kar",
@@ -7291,6 +7283,21 @@
    "email": "vermav@iitk.ac.in"
   },
   {
+   "name": "Mini Chandran",
+   "title": "Professor, Department of Humanities and Social Sciences",
+   "dept": "Humanities and Social Sciences",
+   "url": "https://www.iitk.ac.in/mini-chandran",
+   "depts": [
+    "Humanities and Social Sciences"
+   ],
+   "email": "minic@iitk.ac.in",
+   "phone": "0512-259-7191",
+   "web": "https://www.minichandran.com/",
+   "office": "Office FB 609,",
+   "research": "My primary areas of interest are Classical Sanskrit Aesthetic Theory, Literature and Censorship, Indian Literature in Translation, and Translation Studies.",
+   "qualification": "PhD (University of Kerala)"
+  },
+  {
    "name": "Munmun Jha",
    "title": "Professor, Department of Humanities and Social Sciences",
    "dept": "Humanities and Social Sciences",
@@ -7463,19 +7470,6 @@
    "office": "Office Room No. 654, Faculty Building",
    "research": "Moral epistemology, Metaethics, Normative ethics, Social epistemology, Political philosophy, Ethics of AI",
    "qualification": "PhD (IIT Bombay)"
-  },
-  {
-   "name": "Syed Feroz Hassan",
-   "title": "Assistant Professor, Department of Humanities and Social Sciences",
-   "dept": "Humanities and Social Sciences",
-   "url": "https://www.iitk.ac.in/feroz-hassan",
-   "depts": [
-    "Humanities and Social Sciences"
-   ],
-   "email": "feroz@iitk.ac.in",
-   "phone": "+91-512-679-2065",
-   "office": "Office FB626",
-   "qualification": "PhD (University of Michigan)"
   },
   {
    "name": "Thangamani Ravichandran",
