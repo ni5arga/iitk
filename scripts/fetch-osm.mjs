@@ -26,6 +26,24 @@ const ENDPOINTS = (process.env.OVERPASS_ENDPOINTS ?? [
 
 const ATTEMPTS = Number(process.env.OVERPASS_ATTEMPTS ?? 8)
 
+/**
+ * Mirrors that have already failed outright this run.
+ *
+ * Attempts used to round-robin the whole list, so with two of three mirrors
+ * down two-thirds of every retry went to a server we had just watched fail —
+ * and the one healthy instance got a third of the tries. Endpoints are dropped
+ * on first failure and the retries concentrate on whatever still answers. The
+ * list is cleared if everything lands in it, so a blip cannot permanently
+ * strand a mirror mid-run.
+ */
+const sick = new Set()
+
+function pickEndpoint(attempt) {
+  if (sick.size >= ENDPOINTS.length) sick.clear()
+  const live = ENDPOINTS.filter((e) => !sick.has(e))
+  return live[attempt % live.length]
+}
+
 const QUERIES = {
   boundary: `[out:json][timeout:60];
 way(${CAMPUS_WAY});
@@ -91,7 +109,7 @@ function overpassReason(text, status) {
 async function overpass(query, name, expect = 0) {
   let lastErr
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-    const endpoint = ENDPOINTS[attempt % ENDPOINTS.length]
+    const endpoint = pickEndpoint(attempt)
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -118,6 +136,7 @@ async function overpass(query, name, expect = 0) {
       return json
     } catch (err) {
       lastErr = err
+      sick.add(endpoint)
       if (attempt === ATTEMPTS - 1) break
       // Jittered, so parallel jobs and reruns do not land on a struggling
       // mirror in lockstep.
