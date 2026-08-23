@@ -22,10 +22,27 @@ const ENDPOINTS = (process.env.OVERPASS_ENDPOINTS ?? [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
-  'https://overpass.osm.jp/api/interpreter',
 ].join(',')).split(',').map((s) => s.trim()).filter(Boolean)
 
 const ATTEMPTS = Number(process.env.OVERPASS_ATTEMPTS ?? 8)
+
+/**
+ * Mirrors that have already failed outright this run.
+ *
+ * Attempts used to round-robin the whole list, so with two of three mirrors
+ * down two-thirds of every retry went to a server we had just watched fail —
+ * and the one healthy instance got a third of the tries. Endpoints are dropped
+ * on first failure and the retries concentrate on whatever still answers. The
+ * list is cleared if everything lands in it, so a blip cannot permanently
+ * strand a mirror mid-run.
+ */
+const sick = new Set()
+
+function pickEndpoint(attempt) {
+  if (sick.size >= ENDPOINTS.length) sick.clear()
+  const live = ENDPOINTS.filter((e) => !sick.has(e))
+  return live[attempt % live.length]
+}
 
 const QUERIES = {
   boundary: `[out:json][timeout:60];
@@ -89,10 +106,10 @@ function overpassReason(text, status) {
   return `HTTP ${status}: ${body.slice(0, 200) || '(empty response)'}`
 }
 
-async function overpass(query, name) {
+async function overpass(query, name, expect = 0) {
   let lastErr
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-    const endpoint = ENDPOINTS[attempt % ENDPOINTS.length]
+    const endpoint = pickEndpoint(attempt)
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -106,9 +123,20 @@ async function overpass(query, name) {
       }
       const json = JSON.parse(text)
       if (!Array.isArray(json.elements)) throw new Error('missing elements[]')
+      // A region-limited mirror answers a Kanpur query with HTTP 200 and a
+      // perfectly valid, entirely empty result — overpass.osm.ch serves only
+      // Switzerland and returns 272 bytes for the query that gets 542 kB from
+      // the main instance. Shape checks cannot tell that apart from a campus
+      // that genuinely lost every road, so compare against what we already
+      // have and treat a collapse as a bad mirror rather than as new data.
+      if (expect && json.elements.length < expect * 0.5) {
+        throw new Error(`${new URL(endpoint).host} returned ${json.elements.length} elements, ` +
+          `expected around ${expect} — truncated, or a mirror that does not carry this region`)
+      }
       return json
     } catch (err) {
       lastErr = err
+      sick.add(endpoint)
       if (attempt === ATTEMPTS - 1) break
       // Jittered, so parallel jobs and reruns do not land on a struggling
       // mirror in lockstep.
@@ -134,10 +162,17 @@ async function main() {
       console.log(`= ${name}: cached (${n} elements) — use --force to refetch`)
       continue
     }
+    // What the committed copy holds, so a mirror answering with a fraction of
+    // it can be rejected instead of written.
+    let expect = 0
+    if (existsSync(path)) {
+      try { expect = JSON.parse(await readFile(path, 'utf8')).elements.length } catch { /* refetch */ }
+    }
+
     console.log(`> ${name}: fetching…`)
     let json
     try {
-      json = await overpass(query, name)
+      json = await overpass(query, name, expect)
     } catch (err) {
       // One struggling mirror used to throw away the whole run. `land` failed
       // its attempts while pois, buildings and highways had already come back
