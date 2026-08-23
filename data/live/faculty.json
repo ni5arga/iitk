@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-08-16T21:28:19.729Z",
+ "_fetched": "2026-08-23T21:19:36.950Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -2237,7 +2237,7 @@
    "qualification": "Ph.D, Indian Institute of Technology (IIT) Bombay, 2018"
   },
   {
-   "name": "Syed Feroz Hassan",
+   "name": "Feroz Hassan",
    "title": "Assistant Professor, Department of Humanities and Social Sciences",
    "dept": "Humanities and Social Sciences",
    "url": "https://www.iitk.ac.in/feroz-hassan",
