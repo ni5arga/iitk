@@ -19,7 +19,9 @@ function minutes(hhmm: string): number | null {
   const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim())
   if (!m) return null
   const h = +m[1]!, mi = +m[2]!
-  if (h > 24 || mi > 59) return null
+  // 24:00 is the legal way to write midnight at the end of a day; 24:30 is not,
+  // and reading it as 01:30 tomorrow would put a place "open" at the wrong hour.
+  if (h > 24 || mi > 59 || (h === 24 && mi > 0)) return null
   return h * 60 + mi
 }
 
@@ -90,7 +92,7 @@ export function openNow(spec: string | undefined, now = new Date()): OpenState {
     // A span ending past midnight (to <= from) spills into the next day.
     const overnight = s.to <= s.from
     if (s.days.has(day) && (overnight ? mins >= s.from : mins >= s.from && mins < s.to)) {
-      return { open: true, until: overnight ? clock(s.to) : clock(s.to) }
+      return { open: true, until: clock(s.to) }
     }
     if (overnight && s.days.has((day + 6) % 7) && mins < s.to) {
       return { open: true, until: clock(s.to) }
