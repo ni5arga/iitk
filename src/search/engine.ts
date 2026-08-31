@@ -92,11 +92,14 @@ function scoreDoc(doc: Doc, q: string, qWords: string[]): Hit | null {
     if (k.startsWith(q)) best = Math.max(best, 700 - (k.length - q.length))
   }
 
-  // 2. Title fuzzy.
+  // 2. Title fuzzy. Keep the marks even when the key match above scores
+  //    higher: a key hit is worth 700-1000 and this branch at most ~400, so
+  //    every exact name or code ("L20", "lect", "kd") used to render with the
+  //    highlight silently dropped. The score still takes whichever is larger.
   const t = fuzzy(q, lower(doc.title))
   if (t) {
-    const s = 300 + t.score
-    if (s > best) { best = s; marks = t.at }
+    marks = t.at
+    best = Math.max(best, 300 + t.score)
   }
 
   // 3. Every query word must appear somewhere. Handles "mess dinner",
