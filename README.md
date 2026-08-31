@@ -15,7 +15,7 @@ opening hours — and one fast search over all of it.
 </tr>
 <tr>
 <td align="center"><sub><code>mess dinner</code> — every hall's dinner, from the live feed</sub></td>
-<td align="center"><sub>Light theme, follows your system by default</sub></td>
+<td align="center"><sub>Light theme, one press of the theme button away &mdash; dark is this app's default, not your system's</sub></td>
 </tr>
 </table>
 
