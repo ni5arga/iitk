@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-08-23T21:32:23.628Z",
+ "_fetched": "2026-09-07T00:48:33.901Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -7910,6 +7910,7 @@
    "phone": "0512-259-7251",
    "web": "https://home.iitk.ac.in/~sprath/",
    "office": "CL-205C ,",
+   "research": "Multiheme Proteins and Enzymes, Bioinspired cooperative catalysis, Chemical Biology, Medicinal Inorganic Chemistry, Supramolecular Chirogenesis, NMR Spectroscopy of Paramagnetic Molecules.",
    "qualification": "PhD (IACS, Kolkata)"
   },
   {
