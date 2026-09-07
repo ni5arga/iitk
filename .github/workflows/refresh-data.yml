@@ -9,6 +9,14 @@ name: refresh data
 # source returning nothing, and a churn guard catches the subtler failure where
 # a markup change silently halves the roll. Both run *before* the PR is opened,
 # so a bad pull fails the run instead of landing.
+#
+# The smoke test sits on the other side of that line. It asserts how the app
+# behaves — "L20 finds Lecture Hall 20", "every pinned place is reachable" —
+# against data nobody here controls, so a mapper renaming a building fails it
+# without anything being wrong with the pull. On 2026-09-06 exactly that
+# happened and the run died having done nothing: no PR, no data, no notice.
+# So its failure now holds the merge rather than dropping the refresh — the PR
+# is opened either way and the run goes red for a human to look at.
 
 on:
   schedule:
@@ -28,9 +36,9 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -105,10 +113,23 @@ jobs:
             if (bad) process.exit(1)
           '
 
+      # Deliberately not fatal here — see the note at the top of the file. The
+      # outcome gates the merge below instead.
       - name: Smoke test the refreshed data
+        id: smoke
+        continue-on-error: true
         run: npm run smoke
 
-      - uses: peter-evans/create-pull-request@v6
+      - name: Describe the smoke result for the PR body
+        id: verdict
+        run: |
+          if [ '${{ steps.smoke.outcome }}' = success ]; then
+            echo 'note=Counts passed the sanity floor and the smoke test is green, so this merged itself.' >> "$GITHUB_OUTPUT"
+          else
+            echo 'note=:warning: **The smoke test failed on this data, so this was left unmerged.** Read the run log linked above before merging: usually an upstream rename, occasionally a real break.' >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: peter-evans/create-pull-request@v8
         id: pr
         with:
           branch: chore/refresh-data
@@ -121,14 +142,15 @@ jobs:
             - IITK faculty directory (`data/live/faculty.json`)
             - campusmess.in (`data/live/mess.json`)
 
-            Counts passed the sanity floor. Skim the diff for anything odd
-            (a source changing its markup usually shows up as a mass deletion)
-            if anything looks off after the fact.
+            ${{ steps.verdict.outputs.note }}
+
+            Skim the diff for anything odd — a source changing its markup
+            usually shows up as a mass deletion.
           # public/data is generated and gitignored — only the inputs are committed.
           add-paths: data/
           delete-branch: true
 
-      # Merged rather than left for review. Everything above is the gate; a PR
+      # Merged rather than left for review. The checks above are the gate; a PR
       # nobody merges just means the site serves stale menus. Squashed so the
       # history stays one commit per refresh.
       #
@@ -137,9 +159,18 @@ jobs:
       # "GitHub Actions is not permitted to create or approve pull requests"
       # after having already pushed the branch.
       - name: Merge it
-        if: steps.pr.outputs.pull-request-number
+        if: steps.pr.outputs.pull-request-number && steps.smoke.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr merge ${{ steps.pr.outputs.pull-request-number }} \
             --squash --delete-branch --repo ${{ github.repository }}
+
+      # Red run, but the data is safe in the PR above rather than discarded.
+      - name: Report the smoke failure
+        if: steps.smoke.outcome == 'failure'
+        env:
+          PR: ${{ steps.pr.outputs.pull-request-url || 'no PR — nothing changed upstream' }}
+        run: |
+          echo "::error::smoke test failed on the refreshed data; left unmerged at $PR"
+          exit 1
