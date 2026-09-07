@@ -429,15 +429,32 @@ async function main() {
   }
 
   // The same facility is often mapped twice — once as a node, once as the room
-  // or building around it. Same name at the same spot is one place.
-  const atPoint = new Map()
-  for (const p of [...byId.values()]) {
-    const k = `${norm(p.name)}@${p.lat.toFixed(5)},${p.lon.toFixed(5)}`
-    const hit = atPoint.get(k)
-    if (!hit) { atPoint.set(k, p); continue }
-    // Keep whichever record carries more detail.
-    const score = (x) => Object.keys(x).length + (x.unnamed ? -5 : 0)
-    if (score(p) > score(hit)) { byId.delete(hit.id); atPoint.set(k, p) } else { byId.delete(p.id) }
+  // or building around it, and anonymous fixtures like toilets simply get added
+  // twice by two mappers. Same name within two metres is one place.
+  //
+  // This used to key on the coordinates rounded to five decimals, so it only
+  // collapsed a pair that happened to land in the same ~1m cell. Two toilet
+  // nodes 0.9m apart either side of a cell edge both survived, and the smoke
+  // test — which measures the real distance — then failed the weekly refresh
+  // over an upstream edit. Measure the same way the check does.
+  const score = (x) => Object.keys(x).length + (x.unnamed ? -5 : 0)
+  const sameName = new Map()
+  for (const p of byId.values()) {
+    const k = norm(p.name)
+    const list = sameName.get(k)
+    if (list) list.push(p); else sameName.set(k, [p])
+  }
+  for (const list of sameName.values()) {
+    for (let i = 0; i < list.length; i++) {
+      if (!byId.has(list[i].id)) continue
+      for (let j = i + 1; j < list.length; j++) {
+        const b = list[j]
+        if (!byId.has(b.id) || haversine(list[i].lat, list[i].lon, b.lat, b.lon) >= 2) continue
+        // Keep whichever record carries more detail.
+        if (score(b) > score(list[i])) { byId.delete(list[i].id); break }
+        byId.delete(b.id)
+      }
+    }
   }
 
   const poiList = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name))

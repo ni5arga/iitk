@@ -265,7 +265,9 @@ if (!curatedOverlap) ok(true, 'no curated place sits on top of an OSM feature')
 
 // Same name, near-identical position: one feature entered twice. Two metres is
 // deliberately tight — it is below the width of anything that could be a
-// genuinely separate object sharing a name.
+// genuinely separate object sharing a name. The build collapses these at the
+// same threshold, so anything left here is the dedupe missing one rather than
+// upstream churn, and failing on it is fair.
 const groups = new Map()
 for (const p of placed) {
   if (!p.name) continue
