@@ -49,9 +49,19 @@ const titles = (q, n = 3) => index.search(q).slice(0, n).map((h) => h.title)
 
 ok(top('L20')?.title === 'Lecture Hall 20', 'L20 -> Lecture Hall 20', top('L20')?.title)
 ok(top('l7')?.title === 'Lecture Hall 7', 'l7 -> Lecture Hall 7', top('l7')?.title)
-ok(/Mess/.test(top('mess dinner')?.title ?? ''), 'mess dinner -> a mess', top('mess dinner')?.title)
-ok((index.search('mess dinner')[0]?.sub ?? '').length > 20, 'mess dinner shows the actual menu',
-   (index.search('mess dinner')[0]?.sub ?? '').slice(0, 60))
+// The intent pass answers "mess dinner" out of *tonight's* menu, so this can
+// only be asserted on a day the feed actually covers. Vacations leave the day
+// empty and so does a hall that has not posted yet; neither is a bug in the
+// search, and failing on it would take an unattended data refresh down with it.
+const DAY_TODAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()]
+const dinnerTonight = (campus.mess?.items ?? []).some((m) => m.meal === 'Dinner' && m.day === DAY_TODAY)
+if (dinnerTonight) {
+  ok(/Mess/.test(top('mess dinner')?.title ?? ''), 'mess dinner -> a mess', top('mess dinner')?.title)
+  ok((index.search('mess dinner')[0]?.sub ?? '').length > 20, 'mess dinner shows the actual menu',
+     (index.search('mess dinner')[0]?.sub ?? '').slice(0, 60))
+} else {
+  note(`the feed has no Dinner menu for ${DAY_TODAY} — "mess dinner" left unasserted`)
+}
 ok(top('water')?.cat === 'water' || top('water')?.kind === 'layer', 'water -> water layer/place', top('water')?.title)
 ok(titles('cycle parking').some((t) => /[Cc]ycle/.test(t)), 'cycle parking', titles('cycle parking').join(' / '))
 ok(top('atm') != null, 'atm', top('atm')?.title)
