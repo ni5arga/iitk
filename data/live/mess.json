@@ -1,6 +1,6 @@
 {
  "_source": "https://campusmess.in/api",
- "_fetched": "2026-09-07T00:48:35.855Z",
+ "_fetched": "2026-09-13T22:33:33.791Z",
  "_note": "Community-maintained mess menus from campusmess.in. Approved rows only.",
  "halls": [
   {
@@ -13,6 +13,11 @@
   },
   {
    "name": "Hall 3",
+   "type": "Boys",
+   "tags": []
+  },
+  {
+   "name": "Hall 1",
    "type": "Boys",
    "tags": []
   },
