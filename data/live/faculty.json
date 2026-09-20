@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-09-13T22:33:32.024Z",
+ "_fetched": "2026-09-20T22:39:17.588Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -5140,7 +5140,7 @@
    "web": "https://home.iitk.ac.in/~shiva/",
    "office": "Office Room 6 Hydraulics Lab",
    "research": "Statistical Hydrology, Sediment Transport, Eco-Hydrology",
-   "qualification": "PhD (Purdue University, USAM)"
+   "qualification": "PhD (Purdue University, USA)"
   },
   {
    "name": "Subhadip Das",
@@ -7021,7 +7021,7 @@
    "email": "tsikroria@iitk.ac.in",
    "phone": "0512-679-2481",
    "web": "https://tsikroria0.wixsite.com/trisep",
-   "office": "Faculty Building 358",
+   "office": "FB-389, Faculty Building",
    "research": "Aero-acoustics in phase-locked compressible flows and flow distortion generation in compressor intake ducts.",
    "qualification": "(PhD, The University of Melbourne, Australia)"
   },
