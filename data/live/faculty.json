@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-09-20T22:39:17.588Z",
+ "_fetched": "2026-09-27T23:19:50.428Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -190,7 +190,7 @@
    "email": "ajayvs@iitk.ac.in",
    "phone": "512-259-2006",
    "web": "https://www.ajayvsaero.com/",
-   "office": "Combustion and Propulsion Laboratory",
+   "office": "Combustion and Propulsion Laboratory (CAPL)",
    "qualification": "PhD (University of Maryland College Park, USA)"
   },
   {
@@ -2835,20 +2835,17 @@
    "qualification": "PhD (IIT Gandhinagar)"
   },
   {
-   "name": "Pranamesh Chakraborty",
-   "title": "Assistant Professor, Department of Civil Engineering + Adjunct Faculty in Kotak School of Sustainable (KSS)",
+   "name": "Peeyush Khare",
+   "title": "Assistant Professor, Kotak School of Sustainability (KSS)",
    "dept": "Kotak School of Sustainability",
-   "url": "https://www.iitk.ac.in/pranamesh-chakraborty",
+   "url": "https://www.iitk.ac.in/peeyush-khare",
    "depts": [
-    "Kotak School of Sustainability",
-    "Civil Engineering"
+    "Kotak School of Sustainability"
    ],
-   "email": "pranames@iitk.ac.in",
-   "phone": "+91-512 259 2146",
-   "web": "https://pranamesh.github.io/",
-   "office": "Office Room: Room 4, Block C, Old SAC Building,",
-   "research": "Intelligent Transportation Systems Machine Learning Big Data Analytics Naturalistic Driving Studies",
-   "qualification": "PhD. (Iowa State University)"
+   "email": "peeyushkhare@iitk.ac.in",
+   "office": "104 Center for Environmental Science and Engineering",
+   "research": "Anthropogenic and biogenic reactive emissions, their fate and impacts on environmental sustainability and human health",
+   "qualification": "Ph.D. Chemical and Environmental Engineering, Yale University, USA"
   },
   {
    "name": "Anirban Roy",
@@ -5007,6 +5004,22 @@
    "office": "Office Room: WLE 303B,",
    "research": "Performance based mechanistic characterization of asphalt binder and mixes, Semi Flexible Pavement (SFP) based composite materials, Non-destructive methods for understanding pavement materials behavior, Bonding/debonding between aggregate and asphalt binder, Development of sustainable pavement materials.",
    "qualification": "Ph.D"
+  },
+  {
+   "name": "Pranamesh Chakraborty",
+   "title": "Assistant Professor, Department of Civil Engineering + Adjunct Faculty in Kotak School of Sustainable (KSS)",
+   "dept": "Civil Engineering",
+   "url": "https://www.iitk.ac.in/pranamesh-chakraborty",
+   "depts": [
+    "Civil Engineering",
+    "Kotak School of Sustainability"
+   ],
+   "email": "pranames@iitk.ac.in",
+   "phone": "+91-512 259 2146",
+   "web": "https://pranamesh.github.io/",
+   "office": "Office Room: Room 4, Block C, Old SAC Building,",
+   "research": "Intelligent Transportation Systems Machine Learning Big Data Analytics Naturalistic Driving Studies",
+   "qualification": "PhD. (Iowa State University)"
   },
   {
    "name": "Prishati Raychowdhury",
