@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-09-27T23:19:50.428Z",
+ "_fetched": "2026-10-04T23:20:01.390Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -1258,6 +1258,17 @@
    "qualification": "PhD (IIT Kanpur)"
   },
   {
+   "name": "Ashwin Verma",
+   "title": "Assistant Professor, Department of Intelligent Systems",
+   "dept": "Intelligent Systems",
+   "url": "https://www.iitk.ac.in/ashwin-verma",
+   "depts": [
+    "Intelligent Systems"
+   ],
+   "email": "ashwin@iitk.ac.in",
+   "phone": "0512-679-2690"
+  },
+  {
    "name": "Indranil Saha",
    "title": "Professor, Department of Computer Science and Engineering + Department of Intelligent Systems (DIS) in Wadhwani School of AI & Intelligent Systems (WSAIS) Joint Appointment",
    "dept": "Intelligent Systems",
@@ -1420,22 +1431,6 @@
    "office": "Office ESB2-611, 5th Floor, Engineering Science Building-2, IIT Kanpur, Kanpur 208016",
    "research": "• Nonlinear systems",
    "qualification": "PhD (IIT Bombay)"
-  },
-  {
-   "name": "Vimal Kumar",
-   "title": "Professor, Department of Economic Sciences + Joint Appointment in Department of Intelligent Systems (DIS) in Wadhwani School of AI & Intelligent Systems (WSAIS)",
-   "dept": "Intelligent Systems",
-   "url": "https://www.iitk.ac.in/vimal-kumar",
-   "depts": [
-    "Intelligent Systems",
-    "Economic Sciences",
-    "Wadhwani School of AI & Intelligent Systems (WSAIS)"
-   ],
-   "email": "vk@iitk.ac.in",
-   "phone": "0512-259-7501",
-   "office": "660, Faculty Building",
-   "research": "Political Economics and Game Theory",
-   "qualification": "PhD (University of California, Irvine)"
   },
   {
    "name": "Amarendra Kumar Singh",
@@ -3997,6 +3992,22 @@
    "office": "IIT Kanpur-208016, Uttar Pradesh, India",
    "research": "Game Theory, Economics of Information",
    "qualification": "Ph.D in Economics, University of Texas at Austin, 2021"
+  },
+  {
+   "name": "Vimal Kumar",
+   "title": "Professor, Department of Economic Sciences + Joint Appointment in Department of Intelligent Systems (DIS) in Wadhwani School of AI & Intelligent Systems (WSAIS)",
+   "dept": "Economic Sciences",
+   "url": "https://www.iitk.ac.in/vimal-kumar",
+   "depts": [
+    "Economic Sciences",
+    "Intelligent Systems",
+    "Wadhwani School of AI & Intelligent Systems (WSAIS)"
+   ],
+   "email": "vk@iitk.ac.in",
+   "phone": "0512-259-7501",
+   "office": "660, Faculty Building",
+   "research": "Political Economics and Game Theory",
+   "qualification": "PhD (University of California, Irvine)"
   },
   {
    "name": "Wasim Ahmad",
@@ -6678,7 +6689,7 @@
    ],
    "email": "snaskar@iitk.ac.in",
    "phone": "512-259-2370",
-   "office": "Office 305, Department of Management Sciences",
+   "office": "Office 318, Department of Management Sciences",
    "research": "Information Technology, Emerging Technologies, Supply Chain Management, SC Finance, Social and Organisational impact of IT",
    "qualification": "Ph.D, IIM Calcutta (2022)"
   },
