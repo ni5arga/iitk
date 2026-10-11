@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-10-04T23:20:01.390Z",
+ "_fetched": "2026-10-11T23:52:58.776Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -88,7 +88,13 @@
    "url": "https://www.iitk.ac.in/joydeep-dutta",
    "depts": [
     "Economic Sciences"
-   ]
+   ],
+   "email": "jdutta@iitk.ac.in",
+   "phone": "0512-259-7568",
+   "web": "https://home.iitk.ac.in/~jdutta",
+   "office": "Economics Group",
+   "research": "Major Area : Optimization Theory.",
+   "qualification": "PhD (IIT Kharagpur)"
   },
   {
    "name": "Kumar Alok",
