@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-10-11T23:52:58.776Z",
+ "_fetched": "2026-10-25T23:01:55.307Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -112,12 +112,7 @@
    "url": "https://www.iitk.ac.in/mahamitra-das",
    "depts": [
     "Economic Sciences"
-   ],
-   "email": "mahamitra@iitk.ac.in",
-   "web": "https://sites.google.com/view/mahamitradas/",
-   "office": "Office Room No. - 503H-F, Diamond Jubilee Academic Complex",
-   "research": "Applied Time Series Econometrics, Real Estate Economics",
-   "qualification": "PhD (Indian Statistical Institute, Kolkata)"
+   ]
   },
   {
    "name": "Malabika Koley",
@@ -1272,7 +1267,8 @@
     "Intelligent Systems"
    ],
    "email": "ashwin@iitk.ac.in",
-   "phone": "0512-679-2690"
+   "phone": "0512-679-2690",
+   "web": "https://scholar.google.com/citations?user=X89qO2YAAAAJ&amp;hl=en"
   },
   {
    "name": "Indranil Saha",
@@ -2091,6 +2087,7 @@
    ],
    "email": "amarendrae@iitk.ac.in",
    "phone": "0512-679-2368",
+   "web": "https://home.iitk.ac.in/~amarendrae/index.php",
    "research": "Power electronics applications in renewable energy, electric vehicles, and fuel cell vehicles.",
    "qualification": "PhD (National University of Singapore, Singapore)"
   },
