@@ -180,7 +180,7 @@ if (existsSync(ART_DIR)) {
 // than floating in a field. Offsets are in pixels from the anchor's centre.
 
 const PLACEMENTS = [
-  { art: pinkTwintails, at: 'New Lecture Hall Complex', dx: -34, dy: -30 },
+  { art: pinkTwintails, at: 'New Lecture Hall Complex', dx: -34, dy: -30, fallback: 'Lecture Hall 17' },
   { art: blueBob, at: 'Hall 5 Mess', dx: 26, dy: -34 },
   { art: purpleLong, at: 'P K Kelkar Library', dx: 30, dy: 16 },
   { art: converted['bocchi-guitar'], at: 'Pronite Ground', dx: -23, dy: -23, fallback: 'Auditorium Grounds' },

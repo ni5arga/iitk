@@ -125,7 +125,7 @@ const router = new Router(graph)
 const find = (n) => campus.pois.find((p) => p.name === n)
 
 const pairs = [
-  ['Hall 5 Mess', 'New Lecture Hall Complex'],
+  ['Hall 5 Mess', 'Lecture Hall 17'], // NLHC outline was dropped from OSM (Nov 2026); L17 sits at its centre
   ['P K Kelkar Library', 'Lecture Hall 20'],
   ['Hall 12 Mess', 'Computer Centre'],
   ['Hall 2 Mess', 'H.R. Kadim Diwan Building'],
