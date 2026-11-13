@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-10-25T23:01:55.307Z",
+ "_fetched": "2026-11-09T00:04:05.895Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -112,7 +112,12 @@
    "url": "https://www.iitk.ac.in/mahamitra-das",
    "depts": [
     "Economic Sciences"
-   ]
+   ],
+   "email": "mahamitra@iitk.ac.in",
+   "web": "https://sites.google.com/view/mahamitradas/",
+   "office": "Office Room No. - 503H-F, Diamond Jubilee Academic Complex",
+   "research": "Applied Time Series Econometrics, Real Estate Economics",
+   "qualification": "PhD (Indian Statistical Institute, Kolkata)"
   },
   {
    "name": "Malabika Koley",
@@ -985,7 +990,8 @@
    "depts": [
     "Design"
    ],
-   "email": "ashish@iitk.ac.in"
+   "email": "ashish@iitk.ac.in",
+   "research": "Human factors and ergonomics, occupational health and safety, user-centered design"
   },
   {
    "name": "Girish Ishwar Lone",
@@ -1662,21 +1668,6 @@
    "qualification": "Fellow (PhD), IIM Ahmedabad"
   },
   {
-   "name": "B V Phani",
-   "title": "Professor, Department of Management Sciences",
-   "dept": "Management Sciences",
-   "url": "https://www.iitk.ac.in/b-v-phani",
-   "depts": [
-    "Management Sciences"
-   ],
-   "email": "bvphani@iitk.ac.in",
-   "phone": "+91-512-679-4425",
-   "web": "https://webnew.iitk.ac.in/main/b-v-phani",
-   "office": "R.No: 101, DoMS Building, IIT Kanpur,",
-   "research": "Finance, ICT Innovation & Entrepreneurship",
-   "qualification": "PhD"
-  },
-  {
    "name": "Deepu Philip",
    "title": "Professor, Department of Management Sciences",
    "dept": "Management Sciences",
@@ -1705,6 +1696,20 @@
    "office": "Office Room No.- 100/211",
    "research": "Consumer finance, tourism economics, resilience of social systems, empirical finance",
    "qualification": "PhD (IISc Bangalore)"
+  },
+  {
+   "name": "Dr. B V Phani",
+   "title": "Professor-In-Charge, Gautam School of Innovation and Entrepreneurship (G-SINE) & Professor, Finance, Innovation and Entrepreneurship",
+   "dept": "Management Sciences",
+   "url": "https://www.iitk.ac.in/b-v-phani",
+   "depts": [
+    "Management Sciences"
+   ],
+   "email": "bvphani@iitk.ac.in",
+   "phone": "+91-512-679-4425",
+   "web": "https://webnew.iitk.ac.in/main/b-v-phani",
+   "office": "R.No: 101, DoMS Building, IIT Kanpur,",
+   "research": "Finance, ICT Innovation & Entrepreneurship"
   },
   {
    "name": "Dr. Ram Sewak Sharma",
@@ -3708,8 +3713,8 @@
    "email": "shalab@iitk.ac.in",
    "phone": "0512-259-7905",
    "web": "https://home.iitk.ac.in/~shalab/",
-   "office": "Department of Mathematics & Statistics",
-   "research": "Linear Regression Models, Econometric Modelling, Measurement Error Models, Missing Data Models, Panel Data Models, Restricted Regression, Spatial models, Forecasting Techniques, Sampling Theory",
+   "office": "Department of Statistics & Data Science",
+   "research": "Linear Regression Models, Econometric Modelling, Data-driven statistical modelling, Measurement Error Models, Missing Data Models, Panel Data Models, Restricted Regression, Spatial models, Forecasting Techniques, Sampling Theory",
    "qualification": "PhD (University of Lucknow)"
   },
   {
@@ -8950,8 +8955,9 @@
    ],
    "email": "sudiptad@iitk.ac.in",
    "phone": "0512-679-2174",
+   "web": "https://sites.google.com/view/qmd-lab-sudipta-dubey-iitk/home",
    "office": "Office (O-SL217B),",
-   "research": "Physics of atomically thin materials, Valleytronics, Twistronics",
+   "research": "Physics of atomically thin materials, Valleytronics, Twistronics. For more details please visit our Quantum Materials and Devices Laboratory webpage: https://sites.google.com/view/qmd-lab-sudipta-dubey-iitk/home",
    "qualification": "(Ph.D., TIFR, 2015)"
   },
   {
