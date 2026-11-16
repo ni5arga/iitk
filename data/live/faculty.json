@@ -1,6 +1,6 @@
 {
  "_source": "https://www.iitk.ac.in/iitk-faculty",
- "_fetched": "2026-11-09T00:04:05.895Z",
+ "_fetched": "2026-11-16T00:36:28.588Z",
  "_note": "Public faculty directory published by IIT Kanpur. The listing shows 12 per department and hides the rest behind a Load More button; this walks that endpoint, so it covers everything the directory publishes.",
  "_incomplete_departments": [],
  "items": [
@@ -151,8 +151,8 @@
    ],
    "email": "marshad@iitk.ac.in",
    "phone": "0512-259-7010",
-   "web": "https://www.arshadrahman.com",
-   "office": "FB-672,",
+   "web": "https://meetarshad.github.io/",
+   "office": "Room 409, ESB-2,",
    "research": "Bayesian Econometrics, Econometrics",
    "qualification": "PhD (University of California, Irvine)"
   },
@@ -1227,6 +1227,21 @@
    "qualification": "PhD (IISc Bangalore)"
   },
   {
+   "name": "Aloke Kumar Dutta",
+   "title": "Emeritus Fellow, Department of Electrical Engineering",
+   "dept": "Electrical Engineering",
+   "url": "https://www.iitk.ac.in/aloke-dutta",
+   "depts": [
+    "Electrical Engineering"
+   ],
+   "email": "aloke@iitk.ac.in",
+   "phone": "0512-259-7661",
+   "web": "https://home.iitk.ac.in/~aloke/",
+   "office": "Office WL 126,",
+   "research": "Semiconductor Device Physics and Modeling, Analog/Digital VLSI Circuits, IC Fabrication Technology and Device Characterization, Mixed-Signal RF Circuits",
+   "qualification": "PhD (Louisiana State University (LSU), Baton Rouge, Louisiana, USA)"
+  },
+  {
    "name": "Amit Verma",
    "title": "Associate Professor, Department of Electrical Engineering + MSP Adjunct Faculty",
    "dept": "Electrical Engineering",
@@ -1249,20 +1264,6 @@
    "depts": [
     "Electrical Engineering"
    ]
-  },
-  {
-   "name": "Ankush Sharma",
-   "title": "Professor, Department of Electrical Engineering",
-   "dept": "Electrical Engineering",
-   "url": "https://www.iitk.ac.in/ankush-sharma",
-   "depts": [
-    "Electrical Engineering"
-   ],
-   "email": "ansharma@iitk.ac.in",
-   "phone": "+91-512-2592012",
-   "office": "Office ACES 104",
-   "research": "Power Systems, Smart Grid Technology, State Estimation, IT Application into Power Systems, Smart City, Multi-Agent Systems, Wide Area Monitoring & Control of Power System, Energy Market, Demand Response Management, Internet of Things.",
-   "qualification": "PhD (IIT Kanpur)"
   },
   {
    "name": "Ashwin Verma",
@@ -3264,7 +3265,7 @@
    "qualification": "PhD (Indian Institute of Science)"
   },
   {
-   "name": "Javed Noormohamed Malik",
+   "name": "Javed H Nurmohmed Malik",
    "title": "Professor, Department of Earth Sciences",
    "dept": "Earth Sciences",
    "url": "https://www.iitk.ac.in/javed-n-malik",
@@ -3276,7 +3277,7 @@
    "web": "https://home.iitk.ac.in/~javed/",
    "office": "Office FB-317,",
    "research": "Active Tectonics, Paleoseismology, Paleo-tsunami Deposits, Geomorphology and Sedimentology.",
-   "qualification": "PhD (IIT Madras)"
+   "qualification": "PhD (M.S. University of Baroda)"
   },
   {
    "name": "Abhijit Biswas",
@@ -3286,7 +3287,8 @@
    "depts": [
     "Mathematics"
    ],
-   "email": "abhijit@iitk.ac.in"
+   "email": "abhijit@iitk.ac.in",
+   "office": "FB 581 (Faculty Building)"
   },
   {
    "name": "Abhijit Pal",
@@ -3299,7 +3301,7 @@
    "email": "abhipal@iitk.ac.in",
    "phone": "0512-259-6405",
    "web": "https://sites.google.com/site/abhijitwebpage/",
-   "office": "FB-575, IIT Kanpur,",
+   "office": "FB 551 (Faculty Building),",
    "research": "Relatively Hyperbolic Groups, Mapping Class Groups",
    "qualification": "PhD (Indian Statistical Institute, Kolkata)"
   },
@@ -3323,7 +3325,7 @@
    "email": "asthakur@iitk.ac.in",
    "phone": "0512-259-7287",
    "web": "https://home.iitk.ac.in/~asthakur/",
-   "office": "FB 503, IIT Kanpur, Kanpur 208016",
+   "office": "FB578 (Faculty Building),",
    "research": "Algebraic Topology, Complex Manifolds",
    "qualification": "Ph.D (The Institute of Mathematical Sciences, Chennai)"
   },
@@ -3367,7 +3369,7 @@
    "email": "askuber@iitk.ac.in",
    "phone": "0512-259-6721",
    "web": "https://sites.google.com/view/exploring-infinity-within/",
-   "office": "Department of Mathematics, IIT Kanpur, Kalyanpur, Kanpur, Uttar Pradesh 208016",
+   "office": "FB 506 (Faculty Building),",
    "research": "Representation theory of quivers, Model-theoretic K-theory of modules, Combinatorics",
    "qualification": "PhD (University of Manchester, UK)"
   },
@@ -3425,7 +3427,7 @@
    ],
    "email": "bvrk@iitk.ac.in",
    "phone": "0512-259-7660",
-   "office": "FB571",
+   "office": "FB 555 (Faculty Building)",
    "research": "Finite Element Analysis, Numerical Methods for PDEs, Numerical Analysis, Wavelets, Applied Mathematics, Computational Biology, High Performance Computing, Parallel Numerical Methods, CFD, Complete Flux Scheme, Financial Mathematics, Convection in Porous Media, AI/ML methods for PDEs, BioMedical Image processing, Monsoon Dynamics, Cardiac Electric Activity",
    "qualification": "PhD (SSSIHL, Prasanthinilayam)"
   },
@@ -3439,7 +3441,7 @@
    ],
    "email": "bidyut@iitk.ac.in",
    "phone": "0512-259-2085",
-   "office": "Room No. IIT Kanpur-208016, Uttar Pradesh, India"
+   "office": "FB 587 (Faculty Building),"
   },
   {
    "name": "Adhip Agarwala",
@@ -5678,6 +5680,20 @@
    "email": "vkant@iitk.ac.in"
   },
   {
+   "name": "Ankush Sharma",
+   "title": "Professor, Department of Electrical Engineering",
+   "dept": "Electrical Engineering",
+   "url": "https://www.iitk.ac.in/ankush-sharma",
+   "depts": [
+    "Electrical Engineering"
+   ],
+   "email": "ansharma@iitk.ac.in",
+   "phone": "+91-512-2592012",
+   "office": "Office ACES 104",
+   "research": "Power Systems, Smart Grid Technology, State Estimation, IT Application into Power Systems, Smart City, Multi-Agent Systems, Wide Area Monitoring & Control of Power System, Energy Market, Demand Response Management, Internet of Things.",
+   "qualification": "PhD (IIT Kanpur)"
+  },
+  {
    "name": "Arnab Bose",
    "title": "Assistant Professor, Department of Electrical Engineering",
    "dept": "Electrical Engineering",
@@ -7066,8 +7082,8 @@
     "Mechanical Engineering"
    ],
    "email": "umadanan@iitk.ac.in",
-   "phone": "0512-259-2162",
-   "web": "https://home.iitk.ac.in/~umadanan/",
+   "phone": "+91-512-679-2162",
+   "web": "https://home.iitk.ac.in/~umadanan/etfl/",
    "office": "Office Faculty Building # 302,",
    "research": "Buoyancy-driven convection with/without porous media at high Rayleigh numbers; single- and two-phase flows in micro- and mini-tubes; heat transfer enhancement in nucleate pool boiling, thermofluidics of supercritical fluids, passive thermal management techniques for electronic devices",
    "qualification": "PhD (University of Minnesota)"
@@ -8126,7 +8142,7 @@
    "email": "dhiren@iitk.ac.in",
    "phone": "0512-259-7053",
    "web": "https://home.iitk.ac.in/~dhiren/",
-   "office": "Prof. D. Bahuguna",
+   "office": "FB 565 (Faculty Building)",
    "research": "Differential Equations In Abstract Spaces, Functional Differential Equations, Fractional Differential Equations, Intregal Equations",
    "qualification": "PhD (IIT Kanpur)"
   },
@@ -8188,7 +8204,7 @@
    "email": "kaushik@iitk.ac.in",
    "phone": "0512-259-6217",
    "web": "https://sites.google.com/view/kaushikbal/home",
-   "office": "FB - 327",
+   "office": "FB 525 (Faculty Building),",
    "qualification": "PhD (UPPA, France)"
   },
   {
@@ -8201,7 +8217,7 @@
    ],
    "email": "keshab@iitk.ac.in",
    "web": "https://sites.google.com/view/keshab-bakshi/home",
-   "office": "Department of Mathematics and Statistics",
+   "office": "FB 558 (Faculty Building),",
    "research": "C*-algebras and von Neumann algebras. In particular, Subfactor theory and Planar algebras.",
    "qualification": "PhD (IMSc., Chennai)"
   },
@@ -8246,7 +8262,7 @@
    "email": "mbiswas@iitk.ac.in",
    "phone": "0512-679-2342",
    "web": "https://sites.google.com/view/mrinmayhome/home",
-   "office": "Room No- 502, FB",
+   "office": "FB 553 (Faculty Building)",
    "research": "PDE, Stochastic PDE, Control Theory and Numerics.",
    "qualification": "Ph.D (IISER, Kolkata)"
   },
@@ -8260,7 +8276,7 @@
    ],
    "email": "muthu@iitk.ac.in",
    "web": "https://sites.google.com/view/pmuthukumar/home",
-   "office": "IIT Kanpur, Kanpur 208016.",
+   "office": "FB 591 (Faculty Building),",
    "research": "Complex Analysis and Operator Theory",
    "qualification": "PhD, (Indian Statistical Institute, Chennai)"
   },
@@ -8289,7 +8305,7 @@
    ],
    "email": "nandini@iitk.ac.in",
    "phone": "0512-259-7066",
-   "office": "FB 508,",
+   "office": "FB 517 (Faculty Building),",
    "research": "Combinatorial Topology, Computational Geometry",
    "qualification": "PhD (IISC, Banglore)"
   },
@@ -8303,7 +8319,7 @@
    ],
    "email": "chary@iitk.ac.in",
    "web": "https://home.iitk.ac.in/~chary/",
-   "office": "503 H-N (Diamond Jubilee Academic Complex),",
+   "office": "FB 583 (Faculty Building)",
    "research": "Algebraic Groups, Algebraic geometry and Representation Theory",
    "qualification": "Ph.D, Chennai Mathematical Institute, Chennai"
   },
@@ -8318,7 +8334,7 @@
    "email": "psraj@iitk.ac.in",
    "phone": "0512-259-7297",
    "web": "https://home.iitk.ac.in/~psraj/",
-   "office": "FB558",
+   "office": "FB 519(Faculty Building)",
    "research": "Functional Analysis",
    "qualification": "PhD (IIT Bombay)"
   },
@@ -8333,7 +8349,7 @@
    "email": "parasar@iitk.ac.in",
    "phone": "0512-259-6139",
    "web": "https://www.iitk.ac.in/math/faculty/parasar/",
-   "office": "FB 502,",
+   "office": "FB 524 (Faculty Building)",
    "research": "Harmonic Analysis",
    "qualification": "PhD (IIT Kanpur)"
   },
@@ -8348,7 +8364,7 @@
    "email": "psingla@iitk.ac.in",
    "phone": "0512 679 4784",
    "web": "https://sites.google.com/site/poojasingla7/Home",
-   "office": "KD 206 (H R Kadim Diwan Building)",
+   "office": "FB586 (Faculty Building),",
    "research": "Representations theory of finite and p-adic groups, Applications of representation theory",
    "qualification": "PhD: The Institute of Mathematical Sciences, Chennai"
   },
@@ -8363,6 +8379,7 @@
    "email": "preena@iitk.ac.in",
    "phone": "0512-259-6917",
    "web": "https://home.iitk.ac.in/~preena/",
+   "office": "FB 554 (Faculty Building),",
    "qualification": "PhD (IMSc, Chennai)"
   },
   {
@@ -8391,7 +8408,7 @@
    "email": "rrawat@iitk.ac.in",
    "phone": "0512-259-7466",
    "web": "https://home.iitk.ac.in/~rrawat/",
-   "office": "FB 509, Faculty Building,",
+   "office": "FB 516 (Faculty Building),",
    "research": "Harmonic analysis on Lie groups.",
    "qualification": "PhD (ISI Bangalore)"
   },
@@ -8435,7 +8452,7 @@
    "email": "chavan@iitk.ac.in",
    "phone": "0512-259-7158",
    "web": "https://home.iitk.ac.in/~chavan/",
-   "office": "Department of Mathematics",
+   "office": "FB 552 (Faculty Building)",
    "research": "Operator Theory",
    "qualification": "PhD (University of Pune)"
   },
@@ -8449,7 +8466,7 @@
    ],
    "email": "nsantosh@iitk.ac.in",
    "web": "https://home.iitk.ac.in/~nsantosh/",
-   "office": "Old SAC, Block C, first floor, Room No. 5.,",
+   "office": "FB 588 (Faculty Building),",
    "research": "Representation theory",
    "qualification": "PhD (Universitè Paris-XI, Orsay and University of Leiden)"
   },
@@ -8464,7 +8481,7 @@
    "email": "santosha@iitk.ac.in",
    "phone": "0512-259-6402",
    "web": "https://home.iitk.ac.in/~santosha/",
-   "office": "FB 502",
+   "office": "FB 577 (Faculty Building)",
    "research": "Algebraic Groups and Invariant Theory, Lie Algebra and Representation Theory",
    "qualification": "PhD (CMI Chennai)"
   },
@@ -8508,7 +8525,7 @@
    ],
    "email": "saurabs@iitk.ac.in",
    "phone": "0512-679-2136",
-   "office": "Old SAC A Block Room no 7,",
+   "office": "FB590 (Faculty Building),",
    "research": "L-Function, Sub-convexity problems, Sieve Method, Riemann Zeta Function",
    "qualification": "PhD (TIFR, Mumbai)"
   },
@@ -8523,7 +8540,7 @@
    "email": "sayani@iitk.ac.in",
    "phone": "0512-259-2664",
    "web": "https://sites.google.com/view/sayanibera/home",
-   "office": "FB102",
+   "office": "FB 502 (Faculty Building)",
    "research": "Holomorphic dynamics, Several Complex Variables",
    "qualification": "PhD (IISc Bangalore)"
   },
@@ -8562,7 +8579,7 @@
    "email": "sudhansh@iitk.ac.in",
    "phone": "0512-679-7834",
    "web": "https://sites.google.com/site/shekharhomepage/home",
-   "office": "FB 329, Department of Mathematics,",
+   "office": "FB 560 (Faculty Building),",
    "research": "Algebraic Number Theory and Arithmetic Geometry",
    "qualification": "PhD (TIFR, Mumbai)"
   },
@@ -8577,7 +8594,7 @@
    "email": "vedansh@iitk.ac.in",
    "phone": "0512-259-2629",
    "web": "https://sites.google.com/view/vedansharya/home",
-   "office": "OSAC 201B, IIT Kanpur",
+   "office": "FB 574 (Faculty Building)",
    "research": "Regularity theory for elliptic and parabolic PDEs, Unique continuation problems, Free boundary problems, Curvature driven flows.",
    "qualification": "PhD, TIFR CAM"
   },
